@@ -1,0 +1,57 @@
+{
+  "slug": "",
+  "symbol": "",
+  "name": "",
+  "chain": "",
+  "sector": "",
+  "address": "",
+  "date": "",
+  "updated": "",
+
+  "verdict": { "stance": "neutral", "conviction": 3, "summary": "" },
+  "thesis": "",
+
+  "market": {
+    "price": null, "change24h": null, "change7d": null, "change30d": null,
+    "mcap": null, "fdv": null, "liquidity": null, "volume24h": null,
+    "circulating": null, "totalSupply": null,
+    "ath": null, "athDate": "",
+    "pools": [],
+    "notes": ""
+  },
+
+  "onchain": {
+    "holders": null, "holdersChange30d": null,
+    "concentration": { "top10": null, "top50": null },
+    "topHolders": [],
+    "smartMoney": { "netFlow7d": null, "notes": "", "movers": [] },
+    "flows": [],
+    "notes": ""
+  },
+
+  "fundamentals": {
+    "what": "", "revenue": "",
+    "tvl": null, "tvlChange30d": null,
+    "fees30d": null, "revenue30d": null, "priceToFees": null,
+    "highlights": [],
+    "team": [],
+    "tokenomics": { "allocations": [], "emissions": "" },
+    "unlocks": []
+  },
+
+  "derivatives": {
+    "oi": null, "oiChange24h": null,
+    "fundingRate": null, "fundingPeriod": "",
+    "longShort": null, "liq24h": null, "liqLongShare": null,
+    "notes": ""
+  },
+
+  "narrative": { "sentiment": "", "catalysts": [], "news": [] },
+
+  "risks": [],
+  "scenarios": [],
+
+  "position": { "entry": "", "target": "", "invalidation": "", "size": "", "horizon": "", "notes": "" },
+
+  "sources": []
+}

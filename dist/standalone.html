@@ -1,0 +1,1187 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><circle cx='16' cy='16' r='9' fill='%237c83ff'/></svg>">
+</head>
+<body>
+<title>Token Research</title>
+<style>
+/* ── Token Research — dark minimal ───────────────────────────── */
+
+:root {
+  --bg:          #0a0a0c;
+  --bg-elev:     #111114;
+  --bg-elev-2:   #17171c;
+  --border:      #212127;
+  --border-hi:   #30303a;
+  --text:        #e9e9ee;
+  --text-dim:    #9a9aa8;
+  --text-faint:  #63636f;
+  --accent:      #7c83ff;
+  --accent-dim:  #7c83ff22;
+  --green:       #4ade80;
+  --red:         #f87171;
+  --amber:       #fbbf24;
+  --radius:      14px;
+  --radius-sm:   9px;
+  --mono: ui-monospace, "SF Mono", "JetBrains Mono", "Cascadia Mono", Menlo, monospace;
+  --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Roboto, Helvetica, Arial, sans-serif;
+  --maxw: 1080px;
+}
+
+* { box-sizing: border-box; }
+
+html { scroll-behavior: smooth; scroll-padding-top: 92px; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--sans);
+  font-size: 15px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* subtle top glow */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0 0 auto 0;
+  height: 420px;
+  background: radial-gradient(70% 100% at 50% 0%, #7c83ff14, transparent 70%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.wrap { position: relative; z-index: 1; max-width: var(--maxw); margin: 0 auto; padding: 0 24px; }
+
+a { color: inherit; text-decoration: none; }
+a.link { color: var(--accent); }
+a.link:hover { text-decoration: underline; }
+
+.mono { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+.dim  { color: var(--text-dim); }
+.faint{ color: var(--text-faint); }
+.pos  { color: var(--green); }
+.neg  { color: var(--red); }
+
+/* ── Header ──────────────────────────────────────────────────── */
+
+.site-head {
+  padding: 48px 0 8px;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.brand { display: flex; align-items: center; gap: 11px; font-size: 15px; letter-spacing: -0.01em; }
+.brand-dot {
+  width: 9px; height: 9px; border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 14px var(--accent);
+}
+.brand b { font-weight: 600; }
+.site-head .meta { font-size: 12.5px; color: var(--text-faint); font-family: var(--mono); }
+
+.hero { padding: 26px 0 34px; }
+.hero h1 {
+  margin: 0 0 10px;
+  font-size: 40px;
+  line-height: 1.12;
+  letter-spacing: -0.028em;
+  font-weight: 600;
+}
+.hero p { margin: 0; color: var(--text-dim); max-width: 60ch; font-size: 15.5px; }
+
+/* ── Controls ────────────────────────────────────────────────── */
+
+.controls {
+  display: flex; gap: 12px; align-items: center; flex-wrap: wrap;
+  padding-bottom: 22px;
+}
+
+.search {
+  flex: 1 1 260px;
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+.search svg { position: absolute; left: 14px; width: 15px; height: 15px; color: var(--text-faint); }
+.search input {
+  width: 100%;
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  color: var(--text);
+  font: inherit;
+  padding: 10px 14px 10px 39px;
+  outline: none;
+  transition: border-color .15s, background .15s;
+}
+.search input::placeholder { color: var(--text-faint); }
+.search input:focus { border-color: var(--border-hi); background: var(--bg-elev-2); }
+
+.chips { display: flex; gap: 7px; flex-wrap: wrap; }
+.chip {
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-dim);
+  font: inherit;
+  font-size: 13px;
+  padding: 7px 13px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: all .15s;
+  white-space: nowrap;
+}
+.chip:hover { border-color: var(--border-hi); color: var(--text); }
+.chip[aria-pressed="true"] {
+  background: var(--accent-dim);
+  border-color: #7c83ff55;
+  color: #c3c7ff;
+}
+
+/* ── Report cards ────────────────────────────────────────────── */
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(310px, 1fr));
+  gap: 14px;
+  padding-bottom: 64px;
+}
+
+.card {
+  display: block;
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 18px 20px 16px;
+  transition: border-color .16s, background .16s, transform .16s;
+}
+.card:hover {
+  border-color: var(--border-hi);
+  background: var(--bg-elev-2);
+  transform: translateY(-2px);
+}
+
+.card-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
+.card-id { min-width: 0; }
+.card-sym { font-size: 17px; font-weight: 600; letter-spacing: -0.015em; }
+.card-name { font-size: 13px; color: var(--text-dim); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.card-price { text-align: right; white-space: nowrap; }
+.card-price .p { font-family: var(--mono); font-size: 15px; }
+.card-price .d { font-family: var(--mono); font-size: 12.5px; }
+
+.card-sum {
+  font-size: 13.5px; color: var(--text-dim);
+  display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical;
+  overflow: hidden;
+  min-height: 2.9em;
+}
+
+.card-foot {
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  margin-top: 14px; padding-top: 13px; border-top: 1px solid var(--border);
+  font-size: 12px; color: var(--text-faint); font-family: var(--mono);
+}
+
+.pill {
+  font-size: 11px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase;
+  padding: 4px 9px; border-radius: 999px; border: 1px solid; white-space: nowrap;
+  font-family: var(--sans);
+}
+.pill.bullish { color: var(--green);  border-color: #4ade8040; background: #4ade8014; }
+.pill.bearish { color: var(--red);    border-color: #f8717140; background: #f8717114; }
+.pill.neutral { color: var(--text-dim); border-color: var(--border-hi); background: #ffffff08; }
+
+.tag {
+  font-size: 11.5px; color: var(--text-dim);
+  border: 1px solid var(--border); border-radius: 6px;
+  padding: 2px 7px; font-family: var(--mono);
+}
+
+/* ── Empty / error states ────────────────────────────────────── */
+
+.empty {
+  border: 1px dashed var(--border-hi);
+  border-radius: var(--radius);
+  padding: 56px 28px;
+  text-align: center;
+  color: var(--text-dim);
+  margin-bottom: 64px;
+}
+.empty h3 { margin: 0 0 8px; color: var(--text); font-weight: 600; font-size: 17px; }
+.empty p { margin: 0 auto; max-width: 48ch; font-size: 14px; }
+.empty code {
+  font-family: var(--mono); font-size: 12.5px;
+  background: var(--bg-elev-2); border: 1px solid var(--border);
+  padding: 2px 6px; border-radius: 5px; color: var(--text-dim);
+}
+
+/* ── Report page ─────────────────────────────────────────────── */
+
+.back {
+  display: inline-flex; align-items: center; gap: 7px;
+  font-size: 13px; color: var(--text-dim); padding: 34px 0 0;
+  transition: color .15s;
+}
+.back:hover { color: var(--text); }
+
+.rep-head { padding: 22px 0 26px; border-bottom: 1px solid var(--border); }
+.rep-title { display: flex; align-items: flex-start; justify-content: space-between; gap: 24px; flex-wrap: wrap; }
+.rep-title h1 { margin: 0; font-size: 34px; letter-spacing: -0.028em; font-weight: 600; line-height: 1.15; }
+.rep-title h1 span { color: var(--text-faint); font-weight: 400; }
+.rep-sub { display: flex; align-items: center; gap: 9px; flex-wrap: wrap; margin-top: 11px; }
+
+.rep-price { text-align: right; }
+.rep-price .p { font-family: var(--mono); font-size: 28px; letter-spacing: -0.02em; }
+.rep-price .d { font-family: var(--mono); font-size: 13px; margin-top: 3px; }
+.rep-price .d span { margin-left: 10px; }
+
+.addr {
+  display: inline-flex; align-items: center; gap: 7px;
+  font-family: var(--mono); font-size: 11.5px; color: var(--text-faint);
+  border: 1px solid var(--border); border-radius: 6px; padding: 3px 8px;
+  cursor: pointer; background: none; transition: all .15s;
+}
+.addr:hover { color: var(--text-dim); border-color: var(--border-hi); }
+
+/* sticky section nav */
+.rep-nav {
+  position: sticky; top: 0; z-index: 20;
+  background: #0a0a0ce8;
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 40px;
+}
+.rep-nav-inner {
+  max-width: var(--maxw); margin: 0 auto; padding: 0 24px;
+  display: flex; gap: 4px; overflow-x: auto; scrollbar-width: none;
+}
+.rep-nav-inner::-webkit-scrollbar { display: none; }
+.rep-nav a {
+  padding: 13px 12px; font-size: 13px; color: var(--text-faint);
+  border-bottom: 2px solid transparent; white-space: nowrap;
+  transition: color .15s, border-color .15s;
+}
+.rep-nav a:hover { color: var(--text-dim); }
+.rep-nav a.active { color: var(--text); border-bottom-color: var(--accent); }
+
+section { padding-bottom: 52px; scroll-margin-top: 76px; }
+section > h2 {
+  margin: 0 0 18px;
+  font-size: 12px; font-weight: 600; letter-spacing: .13em; text-transform: uppercase;
+  color: var(--text-faint);
+  display: flex; align-items: center; gap: 12px;
+}
+section > h2::after { content: ""; flex: 1; height: 1px; background: var(--border); }
+
+/* ── Building blocks ─────────────────────────────────────────── */
+
+.panel {
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px 22px;
+}
+.panel + .panel { margin-top: 12px; }
+.panel h3 { margin: 0 0 12px; font-size: 14.5px; font-weight: 600; letter-spacing: -0.01em; }
+.panel p:last-child { margin-bottom: 0; }
+.panel p:first-child { margin-top: 0; }
+
+.panel.accent { border-color: #7c83ff40; background: linear-gradient(180deg, #7c83ff0d, transparent 60%), var(--bg-elev); }
+
+.prose p { margin: 0 0 12px; color: var(--text-dim); }
+.prose strong { color: var(--text); font-weight: 600; }
+
+/* Fixed column counts (not auto-fit) so an odd last item never stretches to
+   full width. Cell dividers are box-shadows, clipped by the container's
+   overflow:hidden — that keeps unused grid area looking like the panel itself. */
+.metrics {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+.metric {
+  padding: 15px 17px;
+  box-shadow: 1px 0 0 var(--border), 0 1px 0 var(--border);
+}
+@media (max-width: 860px) { .metrics { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 420px) { .metrics { grid-template-columns: 1fr; } }
+.metric .k {
+  font-size: 10.5px; letter-spacing: .09em; text-transform: uppercase;
+  color: var(--text-faint); margin-bottom: 6px;
+}
+.metric .v { font-family: var(--mono); font-size: 18px; letter-spacing: -0.015em; }
+.metric .s { font-family: var(--mono); font-size: 11.5px; color: var(--text-faint); margin-top: 3px; }
+
+/* two-column layout */
+.cols { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+@media (max-width: 720px) { .cols { grid-template-columns: 1fr; } }
+
+/* tables */
+.tbl-wrap { overflow-x: auto; border: 1px solid var(--border); border-radius: var(--radius); background: var(--bg-elev); }
+table { width: 100%; border-collapse: collapse; font-size: 13.5px; min-width: 420px; }
+th {
+  text-align: left; font-size: 10.5px; letter-spacing: .09em; text-transform: uppercase;
+  color: var(--text-faint); font-weight: 500;
+  padding: 12px 16px; border-bottom: 1px solid var(--border); white-space: nowrap;
+}
+td { padding: 11px 16px; border-bottom: 1px solid var(--border); color: var(--text-dim); }
+tr:last-child td { border-bottom: none; }
+td.num { font-family: var(--mono); text-align: right; color: var(--text); white-space: nowrap; }
+th.num { text-align: right; }
+td strong { color: var(--text); font-weight: 500; }
+
+/* allocation / share bars */
+.stack { display: flex; height: 9px; border-radius: 999px; overflow: hidden; gap: 2px; margin-bottom: 16px; }
+.stack i { display: block; height: 100%; }
+.legend { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 9px 18px; }
+.legend div { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--text-dim); }
+.legend i { width: 8px; height: 8px; border-radius: 2px; flex: none; }
+.legend b { margin-left: auto; font-family: var(--mono); font-weight: 400; color: var(--text); }
+
+.bar { height: 5px; background: var(--bg-elev-2); border-radius: 999px; overflow: hidden; min-width: 54px; }
+.bar i { display: block; height: 100%; background: var(--accent); border-radius: 999px; }
+
+/* unlocks */
+.unlock { display: flex; align-items: center; gap: 14px; padding: 12px 0; border-bottom: 1px solid var(--border); }
+.unlock:last-child { border-bottom: none; }
+.unlock .date { font-family: var(--mono); font-size: 12.5px; color: var(--text-dim); width: 84px; flex: none; }
+.unlock .body { flex: 1; min-width: 0; }
+.unlock .body .t { font-size: 13.5px; }
+.unlock .body .n { font-size: 12.5px; color: var(--text-faint); }
+.unlock .amt { font-family: var(--mono); font-size: 13px; text-align: right; white-space: nowrap; }
+
+/* risks */
+.risk { display: flex; gap: 13px; padding: 14px 0; border-bottom: 1px solid var(--border); }
+.risk:last-child { border-bottom: none; }
+.risk .dot { width: 7px; height: 7px; border-radius: 50%; margin-top: 8px; flex: none; }
+.risk.high .dot { background: var(--red);   box-shadow: 0 0 9px #f8717166; }
+.risk.med  .dot { background: var(--amber); box-shadow: 0 0 9px #fbbf2466; }
+.risk.low  .dot { background: var(--text-faint); }
+.risk .t { font-size: 14px; font-weight: 500; margin-bottom: 3px; }
+.risk .d { font-size: 13.5px; color: var(--text-dim); }
+.risk .sev {
+  margin-left: auto; flex: none; font-size: 10.5px; letter-spacing: .08em; text-transform: uppercase;
+  color: var(--text-faint); padding-top: 3px;
+}
+
+/* scenarios */
+.scen { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 12px; }
+.scen .panel .name { font-size: 13px; color: var(--text-dim); margin-bottom: 6px; }
+.scen .panel .tgt { font-family: var(--mono); font-size: 22px; letter-spacing: -0.02em; margin-bottom: 10px; }
+.scen .panel .why { font-size: 13px; color: var(--text-dim); }
+.scen .prob { display: flex; align-items: center; gap: 9px; margin-bottom: 12px; font-family: var(--mono); font-size: 12px; color: var(--text-faint); }
+.scen .prob .bar { flex: 1; }
+
+/* news */
+.news a { display: flex; gap: 13px; padding: 12px 0; border-bottom: 1px solid var(--border); align-items: baseline; }
+.news a:last-child { border-bottom: none; }
+.news a:hover .t { color: var(--accent); }
+.news .d { font-family: var(--mono); font-size: 12px; color: var(--text-faint); width: 74px; flex: none; }
+.news .t { font-size: 13.5px; transition: color .15s; }
+.news .src { font-size: 12px; color: var(--text-faint); margin-left: auto; flex: none; padding-left: 12px; }
+
+/* bullet list */
+ul.bullets { margin: 0; padding: 0; list-style: none; }
+ul.bullets li {
+  position: relative; padding: 6px 0 6px 20px;
+  color: var(--text-dim); font-size: 14px;
+}
+ul.bullets li::before {
+  content: ""; position: absolute; left: 4px; top: 15px;
+  width: 5px; height: 5px; border-radius: 50%; background: var(--accent); opacity: .65;
+}
+
+/* key-value rows */
+.kv { display: flex; justify-content: space-between; gap: 16px; padding: 10px 0; border-bottom: 1px solid var(--border); font-size: 14px; }
+.kv:last-child { border-bottom: none; }
+.kv .k { color: var(--text-dim); flex: none; }
+.kv .v { text-align: right; }
+
+/* footer */
+.site-foot {
+  border-top: 1px solid var(--border);
+  padding: 26px 0 44px;
+  font-size: 12.5px;
+  color: var(--text-faint);
+  display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap;
+}
+
+/* loading shimmer */
+.skeleton { border-radius: var(--radius); background: var(--bg-elev); border: 1px solid var(--border); height: 168px; animation: pulse 1.5s ease-in-out infinite; }
+@keyframes pulse { 0%,100% { opacity: 1 } 50% { opacity: .5 } }
+
+@media (max-width: 640px) {
+  .hero h1 { font-size: 30px; }
+  .rep-title h1 { font-size: 26px; }
+  .rep-price { text-align: left; }
+  .wrap, .rep-nav-inner { padding: 0 16px; }
+}
+
+#view-list[hidden], #view-report[hidden] { display: none !important; }
+</style>
+
+<div id="view-list">
+<div class="wrap">
+  <header class="site-head">
+    <div class="brand"><span class="brand-dot"></span><b>Token Research</b></div>
+    <div class="meta" id="stat"></div>
+  </header>
+
+  <div class="hero">
+    <h1>Разборы токенов</h1>
+    <p>Личная база исследований: рынок, on-chain, фундамент, деривативы и риски — по каждому токену в одном месте.</p>
+  </div>
+
+  <div class="controls">
+    <label class="search">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+        <circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/>
+      </svg>
+      <input id="q" type="search" placeholder="Поиск по тикеру, названию, сети…" autocomplete="off" spellcheck="false">
+    </label>
+    <div class="chips" id="filters"></div>
+  </div>
+
+  <main id="list" class="grid" aria-live="polite"></main>
+
+  <footer class="site-foot">
+    <span>Личный ресёрч. Не инвестиционная рекомендация.</span>
+    <span class="mono" id="built"></span>
+  </footer>
+</div>
+</div>
+
+<div id="view-report" hidden>
+<div class="wrap">
+  <a class="back" href="index.html">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+    Все отчёты
+  </a>
+  <header id="head" class="rep-head"></header>
+</div>
+
+<nav class="rep-nav" id="nav" hidden><div class="rep-nav-inner" id="nav-inner"></div></nav>
+
+<div class="wrap">
+  <main id="body"></main>
+  <footer class="site-foot">
+    <span>Личный ресёрч. Не инвестиционная рекомендация.</span>
+    <span class="mono" id="stamp"></span>
+  </footer>
+</div>
+</div>
+
+<script>
+window.__BUNDLE__ = {"data/index.json":{"updated":"2026-07-28","reports":[{"slug":"hype","symbol":"HYPE","name":"Hyperliquid","chain":"Hyperliquid L1","date":"2026-07-28","stance":"neutral","price":55.46,"change24h":-3.81,"mcap":12335747203,"summary":"Биржа №1 по комиссиям среди perp-DEX, но выручка за 30д идёт на ~38% ниже годового среднего, а в обращении лишь 22% предложения. Дорого по FDV, разумно по MC."}]},"data/reports/hype.json":{"slug":"hype","symbol":"HYPE","name":"Hyperliquid","chain":"Hyperliquid L1","sector":"Perp DEX / L1","date":"2026-07-28","updated":"2026-07-28T15:45:00Z","verdict":{"stance":"neutral","conviction":3,"summary":"Hyperliquid — один из немногих проектов в крипте с реальной, измеримой выручкой: **$1.03B комиссий за последние 12 месяцев** при капитализации $12.3B. Это ~12× к TTM-комиссиям — для актива с таким ростом недорого. Проблема в двух вещах: активность остывает (30-дневный run-rate комиссий на ~38% ниже годового среднего), и в обращении всего **22% предложения** — оставшиеся 733M токенов висят навесом над ценой. Покупать здесь — ставка на то, что объёмы вернутся раньше, чем разлоки начнут давить."},"thesis":"Тезис простой: HYPE — это не «токен-мем при бирже», а прокси на долю рынка деривативов, уходящую из CEX в on-chain. Протокол уже собрал $1.45B комиссий за всё время и держит $6.35B TVL. Если считать по капитализации в обращении, актив стоит 11.9× годовых комиссий — дешевле большинства L1 и дешевле публичных бирж на пике цикла.\n\nНо считать по капитализации в обращении здесь как раз и опасно. При максимальном предложении в 1B токенов и 222M в обращении, **FDV $53B означает 51× к TTM-комиссиям** — а именно по FDV рынок в итоге и переоценивает такие активы, когда навес начинает раскрываться.\n\nВторая проблема — свежая. Комиссии за 30 дней дают run-rate ~$640M в год против $1.03B фактических за 12 месяцев. Это не разовый провал, а замедление на треть. Цена уже отреагировала: -27.7% от июньского ATH, -11.6% за месяц.\n\nЯ читаю это как **паузу, а не разворот**. Фундамент цел, оценка стала разумнее, но нет катализатора, который бы оправдал покупку именно сейчас. Жду либо возврата комиссий выше $2M/день устойчиво, либо цены в зоне, где навес уже в цене.","market":{"price":55.46,"change24h":-3.81,"change7d":-10.43,"change30d":-11.61,"mcap":12335747203,"fdv":52976640536,"volume24h":502310868,"circulating":222445714,"totalSupply":1000000000,"ath":76.7,"athDate":"2026-06-16","notes":"Оборот к капитализации — 4.1% в сутки: ликвидность здоровая, выхода из позиции по $10–20M рынок не заметит. MC/FDV **0.23** — самая важная цифра на этой странице. Рынок торгует 22% предложения, а оценивает проект как будто остальные 78% не существуют.\n\nОт ATH $76.70 (16 июня) актив сложился на 27.7%. Падение шло без паники — по 3–4% в неделю, что больше похоже на выход крупных держателей, чем на ликвидационный каскад."},"onchain":{"notes":"Прямых данных по холдерам за этот прогон получить не удалось: HYPE — нативный актив Hyperliquid L1, и Etherscan-совместимые источники его не индексируют (Nansen отдаёт только perp-статистику, DexScreener — пусто).\n\nЧто известно точно из supply-данных: **777.6M токенов (77.8%) вне обращения**. Total supply 955.3M против max 1B — то есть эмиссия почти выбрана, весь дальнейший навес идёт из уже созданных, но заблокированных токенов, а не из новой эмиссии. Это лучше, чем инфляционная модель, но означает, что каждый разлок — это чистое давление на продажу без компенсации ростом сети.","smartMoney":{"notes":"На perp-рынке Hyperliquid по HYPE за сутки: **13 718 трейдеров**, объём $533M, из них покупки $245.8M против продаж $287.2M. Чистый отток **-$41.4M** — деривативная толпа выходит, а не набирает."}},"fundamentals":{"what":"Hyperliquid — децентрализованная биржа бессрочных фьючерсов на собственном L1. Ключевое отличие от конкурентов: полноценный ончейн-ордербук с матчингом на уровне консенсуса, а не AMM и не оффчейн-матчер с ончейн-сеттлментом. По скорости исполнения это ближе к CEX, чем всё остальное в DeFi.\n\nПоверх биржи запущен HyperEVM — EVM-совместимый слой, который делает из Hyperliquid не просто площадку, а платформу с собственной DeFi-экосистемой. Именно это объясняет $6.35B TVL: деньги приходят не только под торговлю.","revenue":"Комиссии с торговли perp и spot, плюс аукционы за листинг тикеров. Существенная часть комиссий направляется в **Assistance Fund**, который выкупает HYPE с рынка — то есть выручка протокола механически транслируется в спрос на токен. Это редкая для крипты прямая связка «объёмы → байбек».\n\nОтсюда и метод оценки: HYPE корректно считать как equity биржи через P/F (цена к комиссиям), а не через сетевые метрики L1.","tvl":6345989410,"fees30d":52561541,"priceToFees":11.9,"highlights":["Комиссии за всё время: **$1.449B**. За последние 12 месяцев — **$1.035B**, то есть 71% всей выручки протокола заработано за последний год.","MC / TTM-комиссии = **11.9×**. FDV / TTM-комиссии = **51.2×**. Вся разница между «дёшево» и «дорого» здесь — это вопрос разлоков.","30-дневные комиссии $52.6M дают годовой run-rate **$639M** — на 38% ниже фактических TTM $1.03B. Бизнес замедляется.","За 24ч комиссии $2.22M против средних $1.53M за неделю — скачок **+139%** к предыдущему дню на волатильности. Разовый всплеск, не тренд.","Эмиссия практически завершена: total 955.3M из max 1B. Дальнейшее давление — из разлоков, а не из инфляции."],"tokenomics":{"allocations":[{"name":"В обращении","pct":0.2224},{"name":"Заблокировано / не в обращении","pct":0.7329},{"name":"Не эмитировано","pct":0.0447}],"emissions":"Разбивка по конкретным получателям (команда, фонд, будущие эмиссии) в этом прогоне не верифицировалась — цифры выше посчитаны напрямую из circulating / total / max supply, чтобы не тащить в отчёт неподтверждённые аллокации. Точный календарь вестинга core contributors стоит проверить отдельно перед входом: это главный фактор риска в кейсе."}},"derivatives":{"oi":1300000000,"fundingRate":0.00125,"fundingPeriod":"1ч · 10.95% годовых","liq24h":16728822,"liqLongShare":0.9916,"notes":"OI $1.3B — это **10.5% от капитализации**. Плечо в системе высокое, но не экстремальное для актива такого профиля.\n\nФандинг положительный и умеренный: +0.00125%/час, ~11% годовых. Лонги платят шортам — позиционирование смещено в лонг, но не настолько, чтобы говорить о перегреве.\n\nСамое интересное — ликвидации: **$16.7M за сутки, из них 99.2% лонги**. Рынок методично вычищает плечо на длинной стороне. Обычно такое соотношение появляется в конце фазы снижения, а не в начале — но одного дня для вывода мало."},"narrative":{"sentiment":"Нарратив «perp-DEX забирают долю у CEX» никуда не делся, и Hyperliquid остаётся его главным бенефициаром — по комиссиям это площадка №1 в сегменте. Но нарратив перестал быть новостью: он отыгран ростом до $76.70 и теперь требует подтверждения цифрами, а цифры за последний месяц слабее.\n\nПозиционирование по деривативам подтверждает усталость: чистый отток $41.4M за сутки при 13.7k активных трейдеров.","catalysts":["Возврат дневных комиссий устойчиво выше $2M — сигнал, что замедление было сезонным, а не структурным","Рост TVL HyperEVM: если экосистема поверх биржи начнёт генерировать собственную активность, оценка перестаёт зависеть только от объёмов perp","Расширение Assistance Fund / байбека — прямой транслятор выручки в цену токена","Календарь разлоков core contributors — риск, но и снятие неопределённости после прохождения крупных траншей"]},"risks":[{"severity":"high","title":"Навес предложения: 78% токенов вне обращения","detail":"777.6M из 1B токенов не торгуются. При FDV $53B против MC $12.3B рынок платит текущую цену за 22% предложения. Любой заметный транш разлока меняет уравнение спроса/предложения радикально, и исторически такие активы переоцениваются в сторону FDV, а не наоборот."},{"severity":"high","title":"Выручка замедляется на треть","detail":"30-дневный run-rate комиссий $639M против $1.03B за трейлинг-год. Если это не сезонность, а начало снижения доли рынка, то оценка 11.9× TTM превращается в 19.3× к текущему темпу — и весь дисконт к аналогам исчезает."},{"severity":"med","title":"Концентрация бизнеса на одном продукте","detail":"Практически вся выручка — комиссии с perp-торговли. Спад волатильности в крипте бьёт по Hyperliquid сильнее, чем по диверсифицированным L1. HyperEVM пока не даёт независимого потока доходов."},{"severity":"med","title":"Непрозрачность холдеров","detail":"Нативный актив собственного L1 не индексируется стандартными on-chain источниками. Проверить концентрацию у топ-адресов и движения крупных держателей значительно сложнее, чем для ERC-20. Слепая зона в анализе."},{"severity":"med","title":"Регуляторный профиль","detail":"Биржа бессрочных фьючерсов с реальными объёмами и без KYC-периметра — очевидная мишень для регуляторов. Токен с прямой связкой «комиссии → байбек» дополнительно похож на ценную бумагу по признакам."},{"severity":"low","title":"Плечо в системе","detail":"OI $1.3B при 99% лонговых ликвидаций за сутки. Риск каскада существует, но масштаб (10.5% от капитализации) не выглядит критичным."}],"scenarios":[{"name":"Медвежий","target":"$34–40","prob":0.3,"detail":"Комиссии закрепляются на $1.5M/день, объёмы уходят к конкурентам, крупный транш разлока проходит в слабом рынке. Оценка сходится к 20× run-rate по FDV-логике."},{"name":"Базовый","target":"$50–65","prob":0.45,"detail":"Боковик. Комиссии стабилизируются около текущих, байбек абсорбирует часть разлоков, рынок ждёт подтверждения. Диапазон между поддержкой на объёмах и сопротивлением из навеса."},{"name":"Бычий","target":"$95–110","prob":0.25,"detail":"Волатильность возвращается, комиссии выходят на $3M+/день, HyperEVM даёт второй поток выручки. Переоценка к 15× уже нового, более высокого run-rate."}],"position":{"entry":"$44–48 — зона, где MC/TTM-комиссии уходит ниже 10× и навес частично в цене. Выше $60 соотношение риск/доходность не работает.","target":"$95–110 при подтверждении разворота по комиссиям. Промежуточная фиксация части позиции — $76 (уровень ATH).","invalidation":"Дневные комиссии ниже $1.2M две недели подряд **или** закрытие недели ниже $38. Первое ломает тезис по фундаменту, второе — по рынку.","size":"Не более 3–5% портфеля до прохождения ближайшего крупного разлока. Тезис фундаментально силён, но навес — фактор, который нельзя захеджировать анализом.","horizon":"2–4 квартала","notes":"Сейчас — **не покупать**. Актив не дешёвый и не дорогой, а находится ровно в середине диапазона, где нет асимметрии. Правильное действие: поставить алерты на $48 по цене и на $2M/день по комиссиям, и входить по тому, что сработает раньше. Перед любым входом обязательно проверить точный календарь вестинга core contributors — это единственный неизвестный параметр, который может перевернуть кейс."},"sources":[{"name":"CoinGecko","note":"цена, капитализация, FDV, supply, ATH, объём 24ч","url":"https://www.coingecko.com/en/coins/hyperliquid"},{"name":"DefiLlama","note":"TVL $6.35B, комиссии 24ч / 7д / 30д / 1г / за всё время","url":"https://defillama.com/protocol/hyperliquid"},{"name":"Nansen","note":"perp-статистика: OI, фандинг, объём, чистый поток, число трейдеров"},{"name":"Coinglass","note":"ликвидации за 24ч и распределение long/short"}]}};
+</script>
+
+<script>
+/* Shared helpers: formatting + data loading. */
+
+/** Format a USD amount compactly: $1.24B, $840M, $12.4K, $3.42, $0.00001234 */
+function usd(v, opts = {}) {
+  if (v == null || v === '' || !isFinite(v)) return '—';
+  const n = Number(v);
+  const abs = Math.abs(n);
+  const sign = n < 0 ? '-' : '';
+  if (abs >= 1e12) return `${sign}$${(abs / 1e12).toFixed(2)}T`;
+  if (abs >= 1e9)  return `${sign}$${(abs / 1e9).toFixed(2)}B`;
+  if (abs >= 1e6)  return `${sign}$${(abs / 1e6).toFixed(abs >= 1e8 ? 0 : 1)}M`;
+  if (abs >= 1e3)  return `${sign}$${(abs / 1e3).toFixed(abs >= 1e5 ? 0 : 1)}K`;
+  if (opts.precise || abs < 1) return `${sign}$${trimPrice(abs)}`;
+  return `${sign}$${abs.toFixed(2)}`;
+}
+
+/** Price with sensible significant digits for sub-dollar tokens. */
+function price(v) {
+  if (v == null || !isFinite(v)) return '—';
+  const n = Number(v);
+  if (n >= 1000) return '$' + n.toLocaleString('en-US', { maximumFractionDigits: 0 });
+  if (n >= 1)    return '$' + n.toFixed(2);
+  return '$' + trimPrice(n);
+}
+
+function trimPrice(n) {
+  if (n === 0) return '0';
+  if (n >= 1) return n.toFixed(2);
+  // keep 4 significant digits below $1
+  const exp = Math.floor(Math.log10(n));
+  const decimals = Math.min(12, Math.max(2, -exp + 3));
+  return n.toFixed(decimals).replace(/0+$/, '').replace(/\.$/, '');
+}
+
+/** Plain number, compact for large values. */
+function num(v, digits = 0) {
+  if (v == null || !isFinite(v)) return '—';
+  const n = Number(v);
+  const abs = Math.abs(n);
+  if (abs >= 1e9) return (n / 1e9).toFixed(2) + 'B';
+  if (abs >= 1e6) return (n / 1e6).toFixed(2) + 'M';
+  if (abs >= 1e3) return n.toLocaleString('en-US', { maximumFractionDigits: 0 });
+  return n.toLocaleString('en-US', { maximumFractionDigits: digits });
+}
+
+/** Percent. Accepts either 0.42 (fraction) or 42 (already percent) via `asFraction`. */
+function pct(v, { asFraction = false, sign = false, digits = 1 } = {}) {
+  if (v == null || !isFinite(v)) return '—';
+  const n = asFraction ? Number(v) * 100 : Number(v);
+  const s = sign && n > 0 ? '+' : '';
+  return `${s}${n.toFixed(Math.abs(n) >= 100 ? 0 : digits)}%`;
+}
+
+/** CSS class for a signed value. */
+function signClass(v) {
+  if (v == null || !isFinite(v) || Number(v) === 0) return 'dim';
+  return Number(v) > 0 ? 'pos' : 'neg';
+}
+
+/** 2026-07-28 → 28 июл 2026 */
+const MONTHS = ['янв', 'фев', 'мар', 'апр', 'мая', 'июн', 'июл', 'авг', 'сен', 'окт', 'ноя', 'дек'];
+function date(iso, { short = false } = {}) {
+  if (!iso) return '—';
+  const d = new Date(iso);
+  if (isNaN(d)) return String(iso);
+  const s = `${d.getUTCDate()} ${MONTHS[d.getUTCMonth()]}`;
+  return short ? s : `${s} ${d.getUTCFullYear()}`;
+}
+
+/** Relative age: "3 дня назад" */
+function ago(iso) {
+  if (!iso) return '';
+  const d = new Date(iso);
+  if (isNaN(d)) return '';
+  const mins = Math.round((Date.now() - d.getTime()) / 60000);
+  if (mins < 60) return `${mins} мин назад`;
+  const hrs = Math.round(mins / 60);
+  if (hrs < 24) return `${hrs} ч назад`;
+  const days = Math.round(hrs / 24);
+  if (days < 31) return `${days} д назад`;
+  return date(iso);
+}
+
+function shortAddr(a) {
+  if (!a) return '';
+  return a.length > 14 ? `${a.slice(0, 6)}…${a.slice(-4)}` : a;
+}
+
+/** Escape for safe interpolation into innerHTML. */
+function esc(s) {
+  if (s == null) return '';
+  return String(s).replace(/[&<>"']/g, c => (
+    { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]
+  ));
+}
+
+/** Minimal inline markup in report text: **bold**, `code`, line breaks → paragraphs. */
+function prose(text) {
+  if (!text) return '';
+  const paras = Array.isArray(text) ? text : String(text).split(/\n\s*\n/);
+  return paras.map(p => `<p>${inline(p)}</p>`).join('');
+}
+
+function inline(t) {
+  return esc(String(t).trim())
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    .replace(/`(.+?)`/g, '<code class="mono">$1</code>')
+    .replace(/\n/g, '<br>');
+}
+
+/** Stance → { label, class } */
+function stance(s) {
+  const map = {
+    bullish: { label: 'Bullish', cls: 'bullish' },
+    bearish: { label: 'Bearish', cls: 'bearish' },
+    neutral: { label: 'Neutral', cls: 'neutral' },
+    watch:   { label: 'Watchlist', cls: 'neutral' },
+    avoid:   { label: 'Avoid', cls: 'bearish' },
+  };
+  return map[String(s || '').toLowerCase()] || { label: s || 'Neutral', cls: 'neutral' };
+}
+
+/** Deterministic palette for allocation charts. */
+const PALETTE = ['#7c83ff', '#4ade80', '#fbbf24', '#f87171', '#38bdf8', '#c084fc', '#fb923c', '#2dd4bf', '#94a3b8'];
+
+/** Fetch JSON with a clear error.
+ *  The single-file build (see build-standalone.js) pre-loads every data file
+ *  into `globalThis.__BUNDLE__`, so the same code runs without a server. */
+async function loadJSON(url) {
+  const bundled = globalThis.__BUNDLE__?.[url];
+  if (bundled) return JSON.parse(JSON.stringify(bundled));
+  const res = await fetch(url, { cache: 'no-cache' });
+  if (!res.ok) throw new Error(`${res.status} ${res.statusText} — ${url}`);
+  return res.json();
+}
+
+
+function initListView() {
+
+const listEl = document.getElementById('list');
+const qEl = document.getElementById('q');
+const filtersEl = document.getElementById('filters');
+const statEl = document.getElementById('stat');
+const builtEl = document.getElementById('built');
+
+let reports = [];
+let activeChain = null;
+
+init();
+
+async function init() {
+  listEl.innerHTML = Array.from({ length: 3 }, () => '<div class="skeleton"></div>').join('');
+  try {
+    const idx = await loadJSON('data/index.json');
+    reports = (idx.reports || []).slice().sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+    builtEl.textContent = idx.updated ? `обновлено ${date(idx.updated)}` : '';
+  } catch (err) {
+    listEl.innerHTML = `<div class="empty" style="grid-column:1/-1">
+      <h3>Не удалось загрузить список отчётов</h3>
+      <p>${esc(err.message)}</p>
+      <p style="margin-top:12px">Если открываешь файл локально — запусти <code>python3 -m http.server</code> в папке репозитория:
+      браузер блокирует <code>fetch</code> для <code>file://</code>.</p>
+    </div>`;
+    return;
+  }
+
+  statEl.textContent = `${reports.length} ${plural(reports.length, 'отчёт', 'отчёта', 'отчётов')}`;
+  renderFilters();
+  render();
+  qEl.addEventListener('input', render);
+}
+
+function plural(n, one, few, many) {
+  const m10 = n % 10, m100 = n % 100;
+  if (m10 === 1 && m100 !== 11) return one;
+  if (m10 >= 2 && m10 <= 4 && (m100 < 10 || m100 >= 20)) return few;
+  return many;
+}
+
+function renderFilters() {
+  const chains = [...new Set(reports.map(r => r.chain).filter(Boolean))];
+  if (chains.length < 2) return;
+  filtersEl.innerHTML = chains
+    .map(c => `<button class="chip" data-chain="${esc(c)}" aria-pressed="false">${esc(c)}</button>`)
+    .join('');
+  filtersEl.addEventListener('click', e => {
+    const btn = e.target.closest('.chip');
+    if (!btn) return;
+    const chain = btn.dataset.chain;
+    activeChain = activeChain === chain ? null : chain;
+    filtersEl.querySelectorAll('.chip').forEach(b =>
+      b.setAttribute('aria-pressed', String(b.dataset.chain === activeChain)));
+    render();
+  });
+}
+
+function render() {
+  const q = qEl.value.trim().toLowerCase();
+  const shown = reports.filter(r => {
+    if (activeChain && r.chain !== activeChain) return false;
+    if (!q) return true;
+    return [r.symbol, r.name, r.chain, r.summary, r.slug]
+      .filter(Boolean).join(' ').toLowerCase().includes(q);
+  });
+
+  if (!reports.length) {
+    listEl.innerHTML = `<div class="empty" style="grid-column:1/-1">
+      <h3>Пока пусто</h3>
+      <p>Напиши мне в чат — например «разбери $HYPE» — и отчёт появится здесь.</p>
+    </div>`;
+    return;
+  }
+
+  if (!shown.length) {
+    listEl.innerHTML = `<div class="empty" style="grid-column:1/-1">
+      <h3>Ничего не найдено</h3><p>Попробуй другой запрос.</p></div>`;
+    return;
+  }
+
+  listEl.innerHTML = shown.map(card).join('');
+}
+
+function card(r) {
+  const st = stance(r.stance);
+  const ch = r.change24h;
+  return `
+  <a class="card" href="report.html?id=${encodeURIComponent(r.slug)}">
+    <div class="card-top">
+      <div class="card-id">
+        <div class="card-sym">${esc(r.symbol || r.slug)}</div>
+        <div class="card-name">${esc(r.name || '')}</div>
+      </div>
+      <div class="card-price">
+        <div class="p">${price(r.price)}</div>
+        ${ch == null ? '' : `<div class="d ${signClass(ch)}">${pct(ch, { sign: true })}</div>`}
+      </div>
+    </div>
+    <div class="card-sum">${esc(r.summary || '')}</div>
+    <div class="card-foot">
+      <span class="pill ${st.cls}">${esc(st.label)}</span>
+      <span>${r.mcap ? esc(usd(r.mcap)) + ' · ' : ''}${esc(date(r.date))}</span>
+    </div>
+  </a>`;
+}
+
+}
+
+function initReportView() {
+
+const headEl = document.getElementById('head');
+const bodyEl = document.getElementById('body');
+const navEl = document.getElementById('nav');
+const navInner = document.getElementById('nav-inner');
+const stampEl = document.getElementById('stamp');
+
+init();
+
+/** Report id from `?id=slug` (multi-page) or `#/slug` (single-file build).
+ *  In-page anchors like `#risks` deliberately do not match. */
+function currentReportId() {
+  const fromQuery = new URLSearchParams(location.search).get('id');
+  if (fromQuery) return fromQuery;
+  const m = (location.hash || '').match(/^#\/(.+)$/);
+  return m ? decodeURIComponent(m[1]) : null;
+}
+
+async function init() {
+  const id = currentReportId();
+  if (!id || !/^[a-z0-9_-]+$/i.test(id)) return fail('Не указан отчёт', 'Открой отчёт со <a class="link" href="index.html">главной страницы</a>.');
+
+  let r;
+  try {
+    r = await loadJSON(`data/reports/${id}.json`);
+  } catch (err) {
+    return fail('Отчёт не найден', esc(err.message));
+  }
+
+  document.title = `${r.symbol || id} — Token Research`;
+  renderHead(r);
+
+  const sections = buildSections(r);
+  bodyEl.innerHTML = sections.map(s => s.html).join('');
+  renderNav(sections);
+  stampEl.textContent = r.updated ? `собрано ${ago(r.updated)}` : '';
+  wireCopy();
+}
+
+function fail(title, msg) {
+  headEl.innerHTML = `<div class="empty"><h3>${esc(title)}</h3><p>${msg}</p></div>`;
+}
+
+/* ── Header ──────────────────────────────────────────────────── */
+
+function renderHead(r) {
+  const m = r.market || {};
+  const st = stance(r.verdict?.stance);
+  const deltas = [
+    ['24ч', m.change24h], ['7д', m.change7d], ['30д', m.change30d],
+  ].filter(([, v]) => v != null)
+   .map(([k, v]) => `<span class="${signClass(v)}">${k} ${pct(v, { sign: true })}</span>`)
+   .join('');
+
+  headEl.innerHTML = `
+    <div class="rep-title">
+      <div>
+        <h1>${esc(r.symbol || r.slug)} <span>${esc(r.name || '')}</span></h1>
+        <div class="rep-sub">
+          <span class="pill ${st.cls}">${esc(st.label)}</span>
+          ${r.chain ? `<span class="tag">${esc(r.chain)}</span>` : ''}
+          ${r.sector ? `<span class="tag">${esc(r.sector)}</span>` : ''}
+          ${r.address ? `<button class="addr" data-copy="${esc(r.address)}" title="Скопировать адрес">
+              ${esc(shortAddr(r.address))}
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 012-2h10"/></svg>
+            </button>` : ''}
+          <span class="faint mono" style="font-size:12px">${esc(date(r.date))}</span>
+        </div>
+      </div>
+      <div class="rep-price">
+        <div class="p">${price(m.price)}</div>
+        <div class="d">${deltas}</div>
+      </div>
+    </div>`;
+}
+
+/* ── Section assembly ────────────────────────────────────────── */
+
+function buildSections(r) {
+  const out = [];
+  const add = (id, label, html) => { if (html) out.push({ id, label, html: sect(id, label, html) }); };
+
+  add('overview',    'Обзор',        overview(r));
+  add('market',      'Рынок',        market(r));
+  add('onchain',     'On-chain',     onchain(r));
+  add('fundamentals','Фундамент',    fundamentals(r));
+  add('derivatives', 'Деривативы',   derivatives(r));
+  add('narrative',   'Нарратив',     narrative(r));
+  add('risks',       'Риски',        risks(r));
+  add('position',    'Позиция',      position(r));
+  add('sources',     'Источники',    sources(r));
+  return out;
+}
+
+function sect(id, label, inner) {
+  return `<section id="${id}"><h2>${esc(label)}</h2>${inner}</section>`;
+}
+
+function renderNav(sections) {
+  if (sections.length < 2) return;
+  navEl.hidden = false;
+  navInner.innerHTML = sections.map(s => `<a href="#${s.id}">${esc(s.label)}</a>`).join('');
+  const links = [...navInner.querySelectorAll('a')];
+  const nodes = sections.map(s => document.getElementById(s.id));
+
+  // Active = the last section whose top has passed under the sticky nav.
+  // (An IntersectionObserver lags here: several sections are on screen at once
+  // and "first intersecting" keeps pointing at the one being scrolled away from.)
+  const sync = () => {
+    const line = 90;
+    let active = nodes[0];
+    for (const n of nodes) {
+      if (n.getBoundingClientRect().top <= line) active = n; else break;
+    }
+    // at the very bottom of the page the last section wins, even if short
+    if (window.innerHeight + window.scrollY >= document.body.scrollHeight - 2) {
+      active = nodes[nodes.length - 1];
+    }
+    links.forEach(a => a.classList.toggle('active', a.hash === `#${active.id}`));
+
+    // keep the active tab visible on narrow screens — scroll the nav strip
+    // directly rather than scrollIntoView, which can move the page itself
+    const cur = links.find(a => a.classList.contains('active'));
+    if (cur) {
+      const pad = 24;
+      const left = cur.offsetLeft, right = left + cur.offsetWidth;
+      if (left - pad < navInner.scrollLeft) navInner.scrollLeft = left - pad;
+      else if (right + pad > navInner.scrollLeft + navInner.clientWidth) {
+        navInner.scrollLeft = right + pad - navInner.clientWidth;
+      }
+    }
+  };
+
+  addEventListener('scroll', () => requestAnimationFrame(sync), { passive: true });
+  sync();
+}
+
+/* ── Sections ────────────────────────────────────────────────── */
+
+function overview(r) {
+  const v = r.verdict || {};
+  if (!v.summary && !r.thesis) return '';
+  const dots = v.conviction
+    ? `<div class="faint mono" style="font-size:12px;margin-top:10px">
+         Уверенность ${v.conviction}/5 ${'●'.repeat(v.conviction)}${'○'.repeat(Math.max(0, 5 - v.conviction))}
+       </div>` : '';
+  return `
+    ${v.summary ? `<div class="panel accent"><div class="prose" style="font-size:16px">${prose(v.summary)}</div>${dots}</div>` : ''}
+    ${r.thesis ? `<div class="panel"><h3>Тезис</h3><div class="prose">${prose(r.thesis)}</div></div>` : ''}`;
+}
+
+function market(r) {
+  const m = r.market;
+  if (!m) return '';
+  const cells = [
+    ['Цена',            price(m.price), m.change24h != null ? `<span class="${signClass(m.change24h)}">${pct(m.change24h, { sign: true })} за 24ч</span>` : ''],
+    ['Капитализация',   usd(m.mcap)],
+    ['FDV',             usd(m.fdv), m.mcap && m.fdv ? `MC/FDV ${(m.mcap / m.fdv).toFixed(2)}` : ''],
+    ['Ликвидность',     usd(m.liquidity), m.volume24h && m.liquidity ? `оборот ${(m.volume24h / m.liquidity).toFixed(1)}×` : ''],
+    ['Объём 24ч',       usd(m.volume24h)],
+    ['В обращении',     m.circulating != null ? num(m.circulating) : '—', m.totalSupply ? `из ${num(m.totalSupply)}` : ''],
+    ['ATH',             price(m.ath), m.athDate ? date(m.athDate) : ''],
+    ['От ATH',          m.ath && m.price ? pct((m.price / m.ath - 1) * 100, { sign: true }) : '—'],
+  ].filter(c => c[1] !== '—' || c[0] === 'Цена');
+
+  const pools = (m.pools || []).length ? `
+    <div class="tbl-wrap" style="margin-top:12px">
+      <table><thead><tr><th>Пул</th><th>DEX</th><th class="num">Ликвидность</th><th class="num">Объём 24ч</th></tr></thead>
+      <tbody>${m.pools.map(p => `<tr>
+        <td><strong>${esc(p.pair || '')}</strong></td>
+        <td>${esc(p.dex || '')}</td>
+        <td class="num">${usd(p.liquidity)}</td>
+        <td class="num">${usd(p.volume24h)}</td>
+      </tr>`).join('')}</tbody></table>
+    </div>` : '';
+
+  const notes = m.notes ? `<div class="panel" style="margin-top:12px"><div class="prose">${prose(m.notes)}</div></div>` : '';
+  return metricGrid(cells) + pools + notes;
+}
+
+function onchain(r) {
+  const o = r.onchain;
+  if (!o) return '';
+  const parts = [];
+
+  const cells = [
+    ['Холдеров',        o.holders != null ? num(o.holders) : '—', o.holdersChange30d != null ? `${pct(o.holdersChange30d, { sign: true })} за 30д` : ''],
+    ['Топ-10',          o.concentration?.top10 != null ? pct(o.concentration.top10, { asFraction: true }) : '—', 'от предложения'],
+    ['Топ-50',          o.concentration?.top50 != null ? pct(o.concentration.top50, { asFraction: true }) : '—'],
+    ['Smart money 7д',  o.smartMoney?.netFlow7d != null ? `<span class="${signClass(o.smartMoney.netFlow7d)}">${usd(o.smartMoney.netFlow7d)}</span>` : '—', 'чистый поток'],
+  ].filter(c => c[1] !== '—');
+  if (cells.length) parts.push(metricGrid(cells));
+
+  if ((o.topHolders || []).length) {
+    parts.push(`<div class="tbl-wrap" style="margin-top:12px">
+      <table><thead><tr><th>Держатель</th><th>Адрес</th><th class="num">Доля</th><th class="num">Стоимость</th></tr></thead>
+      <tbody>${o.topHolders.map(h => `<tr>
+        <td><strong>${esc(h.label || 'Неизвестный')}</strong>${h.tag ? ` <span class="tag">${esc(h.tag)}</span>` : ''}</td>
+        <td class="mono faint" style="font-size:12px">${esc(shortAddr(h.address))}</td>
+        <td class="num">${h.pct != null ? pct(h.pct, { asFraction: true, digits: 2 }) : '—'}</td>
+        <td class="num">${usd(h.valueUsd)}</td>
+      </tr>`).join('')}</tbody></table></div>`);
+  }
+
+  if (o.smartMoney?.notes || (o.smartMoney?.movers || []).length) {
+    const movers = (o.smartMoney.movers || []).map(m => `
+      <div class="kv"><span class="k">${esc(m.label || shortAddr(m.address))}</span>
+      <span class="v mono ${signClass(m.netUsd)}">${usd(m.netUsd)}</span></div>`).join('');
+    parts.push(`<div class="panel" style="margin-top:12px"><h3>Умные деньги</h3>
+      ${o.smartMoney.notes ? `<div class="prose">${prose(o.smartMoney.notes)}</div>` : ''}${movers}</div>`);
+  }
+
+  if ((o.flows || []).length) {
+    parts.push(`<div class="tbl-wrap" style="margin-top:12px">
+      <table><thead><tr><th>Период</th><th class="num">Приток на CEX</th><th class="num">Отток с CEX</th><th class="num">Нетто</th></tr></thead>
+      <tbody>${o.flows.map(f => {
+        const net = f.net != null ? f.net : (f.cexOut != null && f.cexIn != null ? f.cexOut - f.cexIn : null);
+        return `<tr><td><strong>${esc(f.period || '')}</strong></td>
+          <td class="num">${usd(f.cexIn)}</td><td class="num">${usd(f.cexOut)}</td>
+          <td class="num ${signClass(net)}">${usd(net)}</td></tr>`;
+      }).join('')}</tbody></table></div>`);
+  }
+
+  if (o.notes) parts.push(`<div class="panel" style="margin-top:12px"><div class="prose">${prose(o.notes)}</div></div>`);
+  return parts.join('');
+}
+
+function fundamentals(r) {
+  const f = r.fundamentals;
+  if (!f) return '';
+  const parts = [];
+
+  if (f.what) parts.push(`<div class="panel"><h3>Что это</h3><div class="prose">${prose(f.what)}</div></div>`);
+  if (f.revenue) parts.push(`<div class="panel"><h3>Как зарабатывает</h3><div class="prose">${prose(f.revenue)}</div></div>`);
+
+  const cells = [
+    ['TVL',             usd(f.tvl), f.tvlChange30d != null ? `${pct(f.tvlChange30d, { sign: true })} за 30д` : ''],
+    ['Комиссии 30д',    usd(f.fees30d)],
+    ['Выручка 30д',     usd(f.revenue30d)],
+    ['P/F',             f.priceToFees != null ? f.priceToFees.toFixed(1) + '×' : '—'],
+  ].filter(c => c[1] !== '—');
+  if (cells.length) parts.push(`<div style="margin-top:12px">${metricGrid(cells)}</div>`);
+
+  const alloc = f.tokenomics?.allocations || [];
+  if (alloc.length) {
+    const total = alloc.reduce((s, a) => s + (a.pct || 0), 0) || 1;
+    parts.push(`<div class="panel" style="margin-top:12px"><h3>Распределение предложения</h3>
+      <div class="stack">${alloc.map((a, i) =>
+        `<i style="width:${((a.pct || 0) / total * 100).toFixed(2)}%;background:${PALETTE[i % PALETTE.length]}" title="${esc(a.name)}"></i>`).join('')}</div>
+      <div class="legend">${alloc.map((a, i) =>
+        `<div><i style="background:${PALETTE[i % PALETTE.length]}"></i>${esc(a.name)}<b>${pct(a.pct, { asFraction: true })}</b></div>`).join('')}</div>
+      ${f.tokenomics.emissions ? `<div class="prose" style="margin-top:16px">${prose(f.tokenomics.emissions)}</div>` : ''}
+    </div>`);
+  }
+
+  if ((f.unlocks || []).length) {
+    parts.push(`<div class="panel" style="margin-top:12px"><h3>Разлоки</h3>
+      ${f.unlocks.map(u => `<div class="unlock">
+        <div class="date">${esc(date(u.date, { short: true }))}</div>
+        <div class="body">
+          <div class="t">${esc(u.name || 'Разлок')}${u.pctSupply != null ? ` · ${pct(u.pctSupply, { asFraction: true, digits: 2 })} предложения` : ''}</div>
+          ${u.note ? `<div class="n">${inline(u.note)}</div>` : ''}
+        </div>
+        <div class="amt">${usd(u.amountUsd)}</div>
+      </div>`).join('')}</div>`);
+  }
+
+  if ((f.team || []).length) {
+    parts.push(`<div class="panel" style="margin-top:12px"><h3>Команда и инвесторы</h3>
+      ${f.team.map(t => `<div class="kv"><span class="k">${esc(t.role || '')}</span>
+        <span class="v">${esc(t.name || '')}${t.note ? ` <span class="faint">— ${esc(t.note)}</span>` : ''}</span></div>`).join('')}</div>`);
+  }
+
+  if ((f.highlights || []).length) {
+    parts.push(`<div class="panel" style="margin-top:12px"><h3>Ключевое</h3>
+      <ul class="bullets">${f.highlights.map(h => `<li>${inline(h)}</li>`).join('')}</ul></div>`);
+  }
+  return parts.join('');
+}
+
+function derivatives(r) {
+  const d = r.derivatives;
+  if (!d) return '';
+  const cells = [
+    ['Открытый интерес', usd(d.oi), d.oiChange24h != null ? `${pct(d.oiChange24h, { sign: true })} за 24ч` : ''],
+    ['Фандинг',          d.fundingRate != null ? `<span class="${signClass(d.fundingRate)}">${pct(d.fundingRate, { sign: true, digits: 4 })}</span>` : '—', d.fundingPeriod || '8ч'],
+    ['Long/Short',       d.longShort != null ? d.longShort.toFixed(2) : '—'],
+    ['Ликвидации 24ч',   usd(d.liq24h), d.liqLongShare != null ? `${pct(d.liqLongShare, { asFraction: true })} лонги` : ''],
+  ].filter(c => c[1] !== '—');
+  const notes = d.notes ? `<div class="panel" style="margin-top:12px"><div class="prose">${prose(d.notes)}</div></div>` : '';
+  return (cells.length ? metricGrid(cells) : '') + notes;
+}
+
+function narrative(r) {
+  const n = r.narrative;
+  if (!n) return '';
+  const parts = [];
+  if (n.sentiment) parts.push(`<div class="panel"><h3>Настроения</h3><div class="prose">${prose(n.sentiment)}</div></div>`);
+  if ((n.catalysts || []).length) {
+    parts.push(`<div class="panel" style="margin-top:12px"><h3>Катализаторы</h3>
+      <ul class="bullets">${n.catalysts.map(c => `<li>${inline(typeof c === 'string' ? c : `${c.date ? date(c.date) + ' — ' : ''}${c.title || ''}`)}</li>`).join('')}</ul></div>`);
+  }
+  if ((n.news || []).length) {
+    parts.push(`<div class="panel news" style="margin-top:12px"><h3>Новости</h3>
+      ${n.news.map(x => `<a href="${esc(x.url || '#')}" target="_blank" rel="noopener noreferrer">
+        <span class="d">${esc(date(x.date, { short: true }))}</span>
+        <span class="t">${esc(x.title || '')}</span>
+        ${x.source ? `<span class="src">${esc(x.source)}</span>` : ''}
+      </a>`).join('')}</div>`);
+  }
+  return parts.join('');
+}
+
+function risks(r) {
+  const list = r.risks || [];
+  if (!list.length) return '';
+  const order = { high: 0, med: 1, low: 2 };
+  const sorted = list.slice().sort((a, b) => (order[a.severity] ?? 3) - (order[b.severity] ?? 3));
+  const labels = { high: 'Высокий', med: 'Средний', low: 'Низкий' };
+  return `<div class="panel">${sorted.map(x => `
+    <div class="risk ${esc(x.severity || 'low')}">
+      <span class="dot"></span>
+      <div style="flex:1;min-width:0">
+        <div class="t">${esc(x.title || '')}</div>
+        ${x.detail ? `<div class="d">${inline(x.detail)}</div>` : ''}
+      </div>
+      <span class="sev">${esc(labels[x.severity] || '')}</span>
+    </div>`).join('')}</div>`;
+}
+
+function position(r) {
+  const p = r.position;
+  const scen = r.scenarios || [];
+  if (!p && !scen.length) return '';
+  const parts = [];
+
+  if (scen.length) {
+    parts.push(`<div class="scen">${scen.map(s => `
+      <div class="panel">
+        <div class="name">${esc(s.name || '')}</div>
+        <div class="tgt">${esc(s.target || '—')}</div>
+        ${s.prob != null ? `<div class="prob"><span class="bar"><i style="width:${(s.prob * 100).toFixed(0)}%"></i></span>${pct(s.prob, { asFraction: true, digits: 0 })}</div>` : ''}
+        ${s.detail ? `<div class="why">${inline(s.detail)}</div>` : ''}
+      </div>`).join('')}</div>`);
+  }
+
+  if (p) {
+    const rows = [
+      ['Зона входа',    p.entry],
+      ['Цель',          p.target],
+      ['Инвалидация',   p.invalidation],
+      ['Размер',        p.size],
+      ['Горизонт',      p.horizon],
+    ].filter(([, v]) => v);
+    parts.push(`<div class="panel accent" style="margin-top:12px">
+      <h3>План</h3>
+      ${rows.map(([k, v]) => `<div class="kv"><span class="k">${esc(k)}</span><span class="v">${inline(v)}</span></div>`).join('')}
+      ${p.notes ? `<div class="prose" style="margin-top:14px">${prose(p.notes)}</div>` : ''}
+    </div>`);
+  }
+  return parts.join('');
+}
+
+function sources(r) {
+  const s = r.sources || [];
+  if (!s.length) return '';
+  return `<div class="panel">${s.map(x => `<div class="kv">
+    <span class="k">${x.url ? `<a class="link" href="${esc(x.url)}" target="_blank" rel="noopener noreferrer">${esc(x.name)}</a>` : esc(x.name)}</span>
+    <span class="v faint" style="font-size:13px">${esc(x.note || '')}</span>
+  </div>`).join('')}</div>`;
+}
+
+/* ── Bits ────────────────────────────────────────────────────── */
+
+function metricGrid(cells) {
+  return `<div class="metrics">${cells.map(([k, v, s]) => `
+    <div class="metric"><div class="k">${esc(k)}</div><div class="v">${v}</div>${s ? `<div class="s">${s}</div>` : ''}</div>
+  `).join('')}</div>`;
+}
+
+function wireCopy() {
+  document.querySelectorAll('[data-copy]').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(btn.dataset.copy);
+        const old = btn.innerHTML;
+        btn.textContent = 'скопировано';
+        setTimeout(() => { btn.innerHTML = old; }, 1200);
+      } catch { /* clipboard unavailable */ }
+    });
+  });
+}
+
+}
+
+/* ── router ───────────────────────────────────────────────────────
+   '#/'  or empty  → report list
+   '#/<slug>'      → that report
+   '#anything-else' → an in-page anchor; leave the view alone.        */
+
+const viewList = document.getElementById('view-list');
+const viewReport = document.getElementById('view-report');
+let listReady = false;
+let shownSlug = null;
+
+function route() {
+  const m = (location.hash || '').match(/^#\/(.*)$/);
+  const slug = m ? m[1] : '';
+
+  if (!m && location.hash) return;   // in-page anchor, not a route
+
+  if (slug) {
+    if (shownSlug === slug) return;
+    shownSlug = slug;
+    viewList.hidden = true;
+    viewReport.hidden = false;
+    initReportView();
+    window.scrollTo(0, 0);
+  } else {
+    shownSlug = null;
+    viewReport.hidden = true;
+    viewList.hidden = false;
+    if (!listReady) { initListView(); listReady = true; }
+    window.scrollTo(0, 0);
+  }
+}
+
+// Rewrite the multi-page links into routes.
+document.addEventListener('click', e => {
+  const a = e.target.closest('a');
+  if (!a) return;
+  const href = a.getAttribute('href') || '';
+  if (href.startsWith('report.html?id=')) {
+    e.preventDefault();
+    location.hash = '#/' + href.slice('report.html?id='.length);
+  } else if (href === 'index.html') {
+    e.preventDefault();
+    location.hash = '#/';
+  }
+});
+
+addEventListener('hashchange', route);
+route();
+</script>
+
+</body>
+</html>

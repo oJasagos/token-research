@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Token Research</title>
+<link rel="stylesheet" href="assets/css/style.css">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><circle cx='16' cy='16' r='9' fill='%237c83ff'/></svg>">
+</head>
+<body>
+
+<div class="wrap">
+  <header class="site-head">
+    <div class="brand"><span class="brand-dot"></span><b>Token Research</b></div>
+    <div class="meta" id="stat"></div>
+  </header>
+
+  <div class="hero">
+    <h1>Разборы токенов</h1>
+    <p>Личная база исследований: рынок, on-chain, фундамент, деривативы и риски — по каждому токену в одном месте.</p>
+  </div>
+
+  <div class="controls">
+    <label class="search">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+        <circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/>
+      </svg>
+      <input id="q" type="search" placeholder="Поиск по тикеру, названию, сети…" autocomplete="off" spellcheck="false">
+    </label>
+    <div class="chips" id="filters"></div>
+  </div>
+
+  <main id="list" class="grid" aria-live="polite"></main>
+
+  <footer class="site-foot">
+    <span>Личный ресёрч. Не инвестиционная рекомендация.</span>
+    <span class="mono" id="built"></span>
+  </footer>
+</div>
+
+<script type="module" src="assets/js/index.js"></script>
+</body>
+</html>

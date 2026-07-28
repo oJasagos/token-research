@@ -1,0 +1,17 @@
+{
+  "updated": "2026-07-28",
+  "reports": [
+    {
+      "slug": "hype",
+      "symbol": "HYPE",
+      "name": "Hyperliquid",
+      "chain": "Hyperliquid L1",
+      "date": "2026-07-28",
+      "stance": "neutral",
+      "price": 55.46,
+      "change24h": -3.81,
+      "mcap": 12335747203,
+      "summary": "Биржа №1 по комиссиям среди perp-DEX, но выручка за 30д идёт на ~38% ниже годового среднего, а в обращении лишь 22% предложения. Дорого по FDV, разумно по MC."
+    }
+  ]
+}
