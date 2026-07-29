@@ -1,6 +1,6 @@
 import {
   loadJSON, usd, price, num, pct, signClass, date, ago, esc, prose, inline,
-  stance, shortAddr, PALETTE,
+  stance, shortAddr, PALETTE, safeUrl,
 } from './common.js';
 
 const headEl = document.getElementById('head');
@@ -306,11 +306,15 @@ function narrative(r) {
   }
   if ((n.news || []).length) {
     parts.push(`<div class="panel news" style="margin-top:12px"><h3>Новости</h3>
-      ${n.news.map(x => `<a href="${esc(x.url || '#')}" target="_blank" rel="noopener noreferrer">
-        <span class="d">${esc(date(x.date, { short: true }))}</span>
+      ${n.news.map(x => {
+        const href = safeUrl(x.url);
+        const inner = `<span class="d">${esc(date(x.date, { short: true }))}</span>
         <span class="t">${esc(x.title || '')}</span>
-        ${x.source ? `<span class="src">${esc(x.source)}</span>` : ''}
-      </a>`).join('')}</div>`);
+        ${x.source ? `<span class="src">${esc(x.source)}</span>` : ''}`;
+        return href
+          ? `<a href="${esc(href)}" target="_blank" rel="noopener noreferrer">${inner}</a>`
+          : `<a>${inner}</a>`;
+      }).join('')}</div>`);
   }
   return parts.join('');
 }
@@ -368,10 +372,14 @@ function position(r) {
 function sources(r) {
   const s = r.sources || [];
   if (!s.length) return '';
-  return `<div class="panel">${s.map(x => `<div class="kv">
-    <span class="k">${x.url ? `<a class="link" href="${esc(x.url)}" target="_blank" rel="noopener noreferrer">${esc(x.name)}</a>` : esc(x.name)}</span>
-    <span class="v faint" style="font-size:13px">${esc(x.note || '')}</span>
-  </div>`).join('')}</div>`;
+  return `<div class="panel">${s.map(x => {
+    const href = safeUrl(x.url);
+    const label = href
+      ? `<a class="link" href="${esc(href)}" target="_blank" rel="noopener noreferrer">${esc(x.name)}</a>`
+      : esc(x.name);
+    return `<div class="kv"><span class="k">${label}</span>
+    <span class="v faint" style="font-size:13px">${esc(x.note || '')}</span></div>`;
+  }).join('')}</div>`;
 }
 
 /* ── Bits ────────────────────────────────────────────────────── */

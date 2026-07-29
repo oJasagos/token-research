@@ -18,6 +18,21 @@ const path = require('path');
 const root = __dirname;
 const read = p => fs.readFileSync(path.join(root, p), 'utf8');
 
+/** JSON safe to inline inside a <script> block.
+ *  JSON.stringify leaves `<` alone, so a report containing the literal text
+ *  `</script>` would close the tag early: the page dies and anything after it
+ *  is parsed as markup. Report text quotes external sources, so treat it as
+ *  untrusted and escape the characters that can end a script block. */
+function jsonForScriptTag(value) {
+  return JSON.stringify(value)
+    .replace(/</g, '\\u003c')
+    .replace(/>/g, '\\u003e')
+    .replace(/\u2028/g, '\\u2028')
+    .replace(/\u2029/g, '\\u2029');
+}
+
+/* \u2028 and \u2029 are newlines to a JS parser but not inside a JSON string. */
+
 /* ── collect data ─────────────────────────────────────────────── */
 
 const bundle = { 'data/index.json': JSON.parse(read('data/index.json')) };
@@ -64,7 +79,7 @@ ${bodyOf('report.html')}
 </div>
 
 <script>
-window.__BUNDLE__ = ${JSON.stringify(bundle)};
+window.__BUNDLE__ = ${jsonForScriptTag(bundle)};
 </script>
 
 <script>
@@ -136,6 +151,8 @@ const page = `<!doctype html>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
+<meta name="referrer" content="no-referrer">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data:; connect-src 'none'; base-uri 'none'; form-action 'none'">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><circle cx='16' cy='16' r='9' fill='%237c83ff'/></svg>">
 </head>
 <body>

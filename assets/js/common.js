@@ -86,6 +86,21 @@ export function shortAddr(a) {
   return a.length > 14 ? `${a.slice(0, 6)}…${a.slice(-4)}` : a;
 }
 
+/** Only http(s) links are allowed to reach an href.
+ *  esc() neutralises quotes and tags but not the scheme, so without this a
+ *  `javascript:` url in a report would run on click and a `data:text/html`
+ *  one would render an attacker-authored page from our own origin's tab. */
+export function safeUrl(u) {
+  if (!u) return null;
+  let parsed;
+  try {
+    parsed = new URL(String(u).trim(), location.href);
+  } catch {
+    return null;
+  }
+  return parsed.protocol === 'http:' || parsed.protocol === 'https:' ? parsed.href : null;
+}
+
 /** Escape for safe interpolation into innerHTML. */
 export function esc(s) {
   if (s == null) return '';
