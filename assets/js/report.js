@@ -56,6 +56,30 @@ async function init() {
   reveal(document);
   countUpAll(document);
   if (!document.querySelector('.progress')) { readingProgress(); backToTop(); }
+  wireSectionKeys(sections.map(s => s.id));
+}
+
+/** j / k (and arrows) step between sections. */
+function wireSectionKeys(ids) {
+  if (wireSectionKeys.done) { wireSectionKeys.ids = ids; return; }
+  wireSectionKeys.done = true;
+  wireSectionKeys.ids = ids;
+
+  addEventListener('keydown', e => {
+    if (/^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement?.tagName)) return;
+    if (e.metaKey || e.ctrlKey || e.altKey) return;
+    const list = wireSectionKeys.ids;
+    const dir = (e.key === 'j' || e.key === 'ArrowDown') ? 1
+              : (e.key === 'k' || e.key === 'ArrowUp') ? -1 : 0;
+    if (!dir) return;
+    e.preventDefault();
+    const tops = list.map(id => document.getElementById(id)?.getBoundingClientRect().top ?? Infinity);
+    // current = last section already above the sticky nav line
+    let cur = 0;
+    tops.forEach((t, i) => { if (t <= 92) cur = i; });
+    const next = Math.min(list.length - 1, Math.max(0, cur + dir));
+    document.getElementById(list[next])?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
 }
 
 function fail(title, msg) {

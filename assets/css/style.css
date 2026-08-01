@@ -736,3 +736,61 @@ h2 .anchor.copied::after { content: "скопировано"; opacity: 1; letter
 /* a contract address is one unbreakable token — let it wrap rather than push
    the whole page sideways on a phone */
 code.mono { overflow-wrap: anywhere; word-break: break-word; }
+
+/* ── comparison ──────────────────────────────────────────────── */
+
+.top-nav { display: flex; align-items: center; gap: 18px; }
+.top-nav a {
+  font-size: 13px; color: var(--text-dim);
+  border-bottom: 1px solid transparent; transition: color .15s, border-color .15s;
+}
+.top-nav a:hover { color: var(--text); border-bottom-color: var(--accent); }
+
+.back-right { float: right; }
+.back-right svg { margin-left: 2px; }
+
+.cmp-table { min-width: 520px; font-size: 14px; }
+.cmp-table thead th { padding: 16px; vertical-align: bottom; }
+.cmp-table tbody th {
+  text-transform: none; letter-spacing: 0; font-size: 13.5px;
+  color: var(--text-dim); font-weight: 400; white-space: normal;
+  padding: 13px 16px; width: 34%;
+}
+.cmp-table td { padding: 11px 16px; vertical-align: middle; }
+
+.cmp-head { display: block; }
+.cmp-head .s {
+  display: block; font-size: 17px; font-weight: 600; color: var(--text);
+  letter-spacing: -0.015em; transition: color .15s;
+}
+.cmp-head .n { display: block; font-size: 12px; color: var(--text-faint); font-weight: 400; }
+.cmp-head:hover .s { color: var(--accent); }
+
+.cmp-v { display: block; font-family: var(--mono); }
+.cmp-sub { display: block; font-size: 11px; color: var(--amber); font-family: var(--mono); margin-top: 2px; }
+.cmp-bar {
+  display: block; height: 3px; border-radius: 2px; margin-top: 7px;
+  background: var(--bg-elev-2); overflow: hidden;
+}
+.cmp-bar i {
+  display: block; height: 100%; width: 0; border-radius: 2px;
+  background: var(--accent); opacity: .55;
+  transition: width .7s var(--ease);
+}
+.cmp-table tbody tr { transition: background .15s; }
+.cmp-table tbody tr:hover { background: #ffffff05; }
+
+/* ── print ───────────────────────────────────────────────────── */
+
+@media print {
+  :root { --bg: #fff; --bg-elev: #fff; --bg-elev-2: #fff;
+          --text: #111; --text-dim: #333; --text-faint: #666;
+          --border: #ccc; --border-hi: #999; }
+  body::before, .rep-nav, .to-top, .progress, .back, .top-nav,
+  .controls, .card-go, .chart-data summary { display: none !important; }
+  .panel, .metrics, .chart, .tbl-wrap { break-inside: avoid; border-color: #ddd; }
+  section { break-after: auto; padding-bottom: 22px; }
+  .chart-data[open] table, .chart-data table { display: table !important; }
+  a[href^="http"]::after { content: " (" attr(href) ")"; font-size: 10px; color: #666; }
+  .reveal { opacity: 1 !important; transform: none !important; }
+}

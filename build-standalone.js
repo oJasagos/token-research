@@ -56,6 +56,7 @@ const shared = ['assets/js/common.js', 'assets/js/charts.js', 'assets/js/anim.js
   .join('\n');
 const listJs = stripImports(read('assets/js/index.js'));
 const reportJs = stripImports(read('assets/js/report.js'));
+const compareJs = stripImports(read('assets/js/compare.js'));
 
 /** Pull the body markup out of a page, minus its script tag. */
 function bodyOf(file) {
@@ -72,7 +73,7 @@ const css = read('assets/css/style.css');
 const content = `<title>Token Research</title>
 <style>
 ${css}
-#view-list[hidden], #view-report[hidden] { display: none !important; }
+#view-list[hidden], #view-report[hidden], #view-compare[hidden] { display: none !important; }
 </style>
 
 <div id="view-list">
@@ -81,6 +82,10 @@ ${bodyOf('index.html')}
 
 <div id="view-report" hidden>
 ${bodyOf('report.html')}
+</div>
+
+<div id="view-compare" hidden>
+${bodyOf('compare.html')}
 </div>
 
 <script>
@@ -98,36 +103,40 @@ function initReportView() {
 ${reportJs}
 }
 
+function initCompareView() {
+${compareJs}
+}
+
 /* ── router ───────────────────────────────────────────────────────
-   '#/'  or empty  → report list
-   '#/<slug>'      → that report
+   '#/'  or empty   → report list
+   '#/compare'      → comparison table
+   '#/<slug>'       → that report
    '#anything-else' → an in-page anchor; leave the view alone.        */
 
-const viewList = document.getElementById('view-list');
-const viewReport = document.getElementById('view-report');
+const views = {
+  list:    document.getElementById('view-list'),
+  report:  document.getElementById('view-report'),
+  compare: document.getElementById('view-compare'),
+};
 let listReady = false;
-let shownSlug = null;
+let shown = null;
+
+function show(which) {
+  for (const [k, node] of Object.entries(views)) node.hidden = k !== which;
+  window.scrollTo(0, 0);
+}
 
 function route() {
   const m = (location.hash || '').match(/^#\\/(.*)$/);
+  if (!m && location.hash) return;   // in-page anchor, not a route
   const slug = m ? m[1] : '';
 
-  if (!m && location.hash) return;   // in-page anchor, not a route
+  if (shown === slug) return;
+  shown = slug;
 
-  if (slug) {
-    if (shownSlug === slug) return;
-    shownSlug = slug;
-    viewList.hidden = true;
-    viewReport.hidden = false;
-    initReportView();
-    window.scrollTo(0, 0);
-  } else {
-    shownSlug = null;
-    viewReport.hidden = true;
-    viewList.hidden = false;
-    if (!listReady) { initListView(); listReady = true; }
-    window.scrollTo(0, 0);
-  }
+  if (slug === 'compare') { show('compare'); initCompareView(); }
+  else if (slug) { show('report'); initReportView(); }
+  else { show('list'); if (!listReady) { initListView(); listReady = true; } }
 }
 
 // Rewrite the multi-page links into routes.
@@ -141,6 +150,9 @@ document.addEventListener('click', e => {
   } else if (href === 'index.html') {
     e.preventDefault();
     location.hash = '#/';
+  } else if (href === 'compare.html') {
+    e.preventDefault();
+    location.hash = '#/compare';
   }
 });
 
