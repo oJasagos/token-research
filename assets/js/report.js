@@ -4,6 +4,7 @@ import {
 } from './common.js';
 import { mountCharts, CATEGORICAL } from './charts.js';
 import { reveal, countUpAll, readingProgress, backToTop, daysUntil } from './anim.js';
+import { startLive, applyPrice, applyChange, liveBadge } from './live.js';
 
 const headEl = document.getElementById('head');
 const bodyEl = document.getElementById('body');
@@ -57,6 +58,41 @@ async function init() {
   countUpAll(document);
   if (!document.querySelector('.progress')) { readingProgress(); backToTop(); }
   wireSectionKeys(sections.map(s => s.id));
+  wireLive(r);
+}
+
+let stopLive = null;
+
+/** Live price in the report header. Everything else on the page stays as of
+ *  the report date, so the badge says which is which. */
+function wireLive(r) {
+  if (stopLive) { stopLive(); stopLive = null; }
+  const cfg = r.market?.live;
+  if (!cfg) return;
+
+  const sub = document.querySelector('.rep-sub');
+  const badge = liveBadge();
+  sub?.appendChild(badge.node);
+
+  let last = null;
+  stopLive = startLive([{
+    live: cfg, reference: r.market?.price,
+    apply(q) {
+      const node = document.querySelector('.rep-price .p');
+      applyPrice(node, q.price, last);
+      const d = document.querySelector('.rep-price .d span');
+      if (d && isFinite(q.change24h)) { d.className = signClass(q.change24h); d.textContent = `24ч ${pct(q.change24h, { sign: true })}`; }
+
+      // mcap and fdv are price times supply, so they follow the live price
+      // rather than sitting stale next to it
+      const mc = document.querySelector('[data-derive="mcap"]');
+      const fd = document.querySelector('[data-derive="fdv"]');
+      if (mc && r.market?.circulating) mc.textContent = usd(q.price * r.market.circulating);
+      if (fd && r.market?.totalSupply) fd.textContent = usd(q.price * r.market.totalSupply);
+      last = q.price;
+      badge._venue = q.venue;
+    },
+  }], ({ ok, at }) => ok ? badge.ok(badge._venue || '', at) : badge.fail(`на ${date(r.date)}`));
 }
 
 /** j / k (and arrows) step between sections. */
@@ -219,8 +255,8 @@ function market(r) {
   if (!m) return '';
   const cells = [
     ['Цена',            price(m.price), m.change24h != null ? `<span class="${signClass(m.change24h)}">${pct(m.change24h, { sign: true })} за 24ч</span>` : ''],
-    ['Капитализация',   usd(m.mcap)],
-    ['FDV',             usd(m.fdv), m.mcap && m.fdv ? `MC/FDV ${(m.mcap / m.fdv).toFixed(2)}` : ''],
+    ['Капитализация',   `<span data-derive="mcap">${usd(m.mcap)}</span>`],
+    ['FDV',             `<span data-derive="fdv">${usd(m.fdv)}</span>`, m.mcap && m.fdv ? `MC/FDV ${(m.mcap / m.fdv).toFixed(2)}` : ''],
     ['Ликвидность',     usd(m.liquidity), m.volume24h && m.liquidity ? `оборот ${(m.volume24h / m.liquidity).toFixed(1)}×` : ''],
     ['Объём 24ч',       usd(m.volume24h)],
     ['В обращении',     m.circulating != null ? num(m.circulating) : '—', m.totalSupply ? `из ${num(m.totalSupply)}` : ''],
@@ -239,7 +275,10 @@ function market(r) {
       </tr>`).join('')}</tbody></table>
     </div>` : '';
 
-  return metricGrid(cells)
+  const liveNote = m.live
+    ? `<div class="live-note">Цена и капитализация обновляются с биржи. Мультипликаторы, комиссии и выводы посчитаны на дату отчёта.</div>`
+    : '';
+  return metricGrid(cells) + liveNote
     + (m.charts || []).map(chartBlock).join('')
     + pools
     + (m.notes ? `<div class="panel reveal" style="margin-top:12px"><div class="prose">${prose(m.notes)}</div></div>` : '');

@@ -7,6 +7,7 @@
 
 import { loadJSON, usd, price, num, pct, signClass, esc, date, stance } from './common.js';
 import { reveal, daysUntil } from './anim.js';
+import { startLive, applyPrice, liveBadge } from './live.js';
 
 const tableEl = document.getElementById('cmp');
 const noteEl = document.getElementById('cmp-note');
@@ -17,7 +18,7 @@ const ROWS = [
     const s = stance(v); return `<span class="pill ${s.cls}">${esc(s.label)}</span>`;
   }, false],
   ['Сеть', r => r.chain, v => esc(v || '—'), false],
-  ['Цена', r => r.market?.price, v => price(v), false],
+  ['Цена', r => r.market?.price, (v, r) => `<span class="cmp-live" data-slug="${esc(r.slug)}">${price(v)}</span>`, false],
   ['За 24ч', r => r.market?.change24h, v => v == null ? '—' : `<span class="${signClass(v)}">${pct(v, { sign: true })}</span>`, false],
   ['За 30д', r => r.market?.change30d, v => v == null ? '—' : `<span class="${signClass(v)}">${pct(v, { sign: true })}</span>`, false],
   ['От пика', r => (r.market?.ath && r.market?.price) ? (r.market.price / r.market.ath - 1) * 100 : null,
@@ -70,11 +71,31 @@ async function init() {
   }
 
   render(reports);
+  wireLive(reports);
   if (noteEl) {
     noteEl.textContent = `${reports.length} ${plural(reports.length, 'отчёт', 'отчёта', 'отчётов')}. `
       + 'Строки без данных скрыты. Полоска показывает величину относительно других, а не оценку.';
   }
   reveal(document);
+}
+
+/** Only the price row goes live; every other row is as of its report date. */
+function wireLive(reports) {
+  const badge = liveBadge();
+  noteEl?.parentNode.insertBefore(badge.node, noteEl.nextSibling);
+  const last = {};
+  const targets = reports.filter(r => r.market?.live).map(r => ({
+    live: r.market.live, reference: r.market.price,
+    apply(q) {
+      const node = tableEl.querySelector(`.cmp-live[data-slug="${CSS.escape(r.slug)}"]`);
+      applyPrice(node, q.price, last[r.slug]);
+      last[r.slug] = q.price;
+    },
+  }));
+  if (!targets.length) return;
+  const venues = [...new Set(reports.filter(r => r.market?.live)
+    .map(r => r.market.live.venue === 'gate' ? 'Gate' : 'Binance'))];
+  startLive(targets, ({ ok, at }) => ok ? badge.ok(venues.join(' · '), at) : badge.fail('обновить не удалось'));
 }
 
 function render(reports) {
@@ -100,8 +121,8 @@ function render(reports) {
         <tbody>
           ${rows.map(row => `<tr>
             <th scope="row">${esc(row.label)}</th>
-            ${row.vals.map(v => `<td class="num">
-              <span class="cmp-v">${row.fmt(v)}</span>
+            ${row.vals.map((v, i) => `<td class="num">
+              <span class="cmp-v">${row.fmt(v, reports[i])}</span>
               ${row.bar && typeof v === 'number' && isFinite(v)
                 ? `<span class="cmp-bar"><i style="--w:${(Math.abs(v) / row.max * 100).toFixed(1)}%"></i></span>` : ''}
             </td>`).join('')}

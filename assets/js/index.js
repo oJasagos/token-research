@@ -1,5 +1,6 @@
 import { loadJSON, price, pct, signClass, esc, date, stance, usd, num } from './common.js';
 import { reveal } from './anim.js';
+import { startLive, applyPrice, applyChange, liveBadge } from './live.js';
 
 const listEl = document.getElementById('list');
 const qEl = document.getElementById('q');
@@ -47,6 +48,31 @@ async function init() {
 
   qEl.addEventListener('input', render);
   wireKeys();
+  wireLive();
+}
+
+/** Live prices on the cards. The nodes are looked up on each tick because
+ *  filtering and sorting rebuild the grid underneath us. */
+function wireLive() {
+  const badge = liveBadge();
+  statEl.parentNode.insertBefore(badge.node, statEl);
+  const last = {};
+
+  const targets = reports.filter(r => r.live).map(r => ({
+    live: r.live, reference: r.price,
+    apply(q) {
+      const card = listEl.querySelector(`.card[data-slug="${CSS.escape(r.slug)}"]`);
+      r.livePrice = q.price;
+      if (!card) return;
+      applyPrice(card.querySelector('.card-price .p'), q.price, last[r.slug]);
+      applyChange(card.querySelector('.card-price .d'), q.change24h);
+      last[r.slug] = q.price;
+    },
+  }));
+  if (!targets.length) return;
+
+  const venues = [...new Set(reports.filter(r => r.live).map(r => r.live.venue === 'gate' ? 'Gate' : 'Binance'))];
+  startLive(targets, ({ ok, at }) => ok ? badge.ok(venues.join(' · '), at) : badge.fail('обновить не удалось'));
 }
 
 function plural(n, one, few, many) {
@@ -161,7 +187,7 @@ function card(r, i) {
   const st = stance(r.stance);
   const ch = r.change24h;
   return `
-  <a class="card reveal" style="--i:${i}" href="report.html?id=${encodeURIComponent(r.slug)}">
+  <a class="card reveal" data-slug="${esc(r.slug)}" style="--i:${i}" href="report.html?id=${encodeURIComponent(r.slug)}">
     <div class="card-top">
       <div class="card-id">
         <div class="card-sym">${esc(r.symbol || r.slug)}</div>
