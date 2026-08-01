@@ -1,13 +1,23 @@
 import {
   loadJSON, usd, price, num, pct, signClass, date, ago, esc, prose, inline,
-  stance, shortAddr, PALETTE, safeUrl,
+  stance, shortAddr, safeUrl,
 } from './common.js';
+import { mountCharts, CATEGORICAL } from './charts.js';
+import { reveal, countUpAll, readingProgress, backToTop, daysUntil } from './anim.js';
 
 const headEl = document.getElementById('head');
 const bodyEl = document.getElementById('body');
 const navEl = document.getElementById('nav');
 const navInner = document.getElementById('nav-inner');
 const stampEl = document.getElementById('stamp');
+
+/** Chart specs collected while building HTML, mounted once it is in the DOM. */
+let charts = [];
+const chartBlock = spec => {
+  if (!spec || !(spec.series || []).length) return '';
+  charts.push(spec);
+  return `<div class="chart reveal" data-chart="${charts.length - 1}"></div>`;
+};
 
 init();
 
@@ -21,6 +31,7 @@ function currentReportId() {
 }
 
 async function init() {
+  charts = [];
   const id = currentReportId();
   if (!id || !/^[a-z0-9_-]+$/i.test(id)) return fail('Не указан отчёт', 'Открой отчёт со <a class="link" href="index.html">главной страницы</a>.');
 
@@ -38,7 +49,13 @@ async function init() {
   bodyEl.innerHTML = sections.map(s => s.html).join('');
   renderNav(sections);
   stampEl.textContent = r.updated ? `собрано ${ago(r.updated)}` : '';
+
+  mountCharts(bodyEl, charts);
   wireCopy();
+  wireAnchors();
+  reveal(document);
+  countUpAll(document);
+  if (!document.querySelector('.progress')) { readingProgress(); backToTop(); }
 }
 
 function fail(title, msg) {
@@ -46,6 +63,14 @@ function fail(title, msg) {
 }
 
 /* ── Header ──────────────────────────────────────────────────── */
+
+function nextUnlock(r) {
+  const list = (r.fundamentals?.unlocks || [])
+    .map(u => ({ ...u, d: daysUntil(u.date) }))
+    .filter(u => u.d != null)
+    .sort((a, b) => a.d - b.d);
+  return list[0] || null;
+}
 
 function renderHead(r) {
   const m = r.market || {};
@@ -56,6 +81,10 @@ function renderHead(r) {
    .map(([k, v]) => `<span class="${signClass(v)}">${k} ${pct(v, { sign: true })}</span>`)
    .join('');
 
+  const un = nextUnlock(r);
+  const countdown = un ? `<span class="chip-countdown" title="${esc(un.name || 'Разлок')} · ${esc(date(un.date))}">
+      <i></i>до разлока ${un.d} ${plural(un.d, 'день', 'дня', 'дней')}</span>` : '';
+
   headEl.innerHTML = `
     <div class="rep-title">
       <div>
@@ -64,6 +93,7 @@ function renderHead(r) {
           <span class="pill ${st.cls}">${esc(st.label)}</span>
           ${r.chain ? `<span class="tag">${esc(r.chain)}</span>` : ''}
           ${r.sector ? `<span class="tag">${esc(r.sector)}</span>` : ''}
+          ${countdown}
           ${r.address ? `<button class="addr" data-copy="${esc(r.address)}" title="Скопировать адрес">
               ${esc(shortAddr(r.address))}
               <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 012-2h10"/></svg>
@@ -76,6 +106,13 @@ function renderHead(r) {
         <div class="d">${deltas}</div>
       </div>
     </div>`;
+}
+
+function plural(n, one, few, many) {
+  const a = n % 10, b = n % 100;
+  if (a === 1 && b !== 11) return one;
+  if (a >= 2 && a <= 4 && (b < 10 || b >= 20)) return few;
+  return many;
 }
 
 /* ── Section assembly ────────────────────────────────────────── */
@@ -97,7 +134,7 @@ function buildSections(r) {
 }
 
 function sect(id, label, inner) {
-  return `<section id="${id}"><h2>${esc(label)}</h2>${inner}</section>`;
+  return `<section id="${id}"><h2><a class="anchor" href="#${id}" aria-label="Ссылка на раздел">${esc(label)}</a></h2>${inner}</section>`;
 }
 
 function renderNav(sections) {
@@ -116,7 +153,6 @@ function renderNav(sections) {
     for (const n of nodes) {
       if (n.getBoundingClientRect().top <= line) active = n; else break;
     }
-    // at the very bottom of the page the last section wins, even if short
     if (window.innerHeight + window.scrollY >= document.body.scrollHeight - 2) {
       active = nodes[nodes.length - 1];
     }
@@ -145,12 +181,13 @@ function overview(r) {
   const v = r.verdict || {};
   if (!v.summary && !r.thesis) return '';
   const dots = v.conviction
-    ? `<div class="faint mono" style="font-size:12px;margin-top:10px">
-         Уверенность ${v.conviction}/5 ${'●'.repeat(v.conviction)}${'○'.repeat(Math.max(0, 5 - v.conviction))}
-       </div>` : '';
+    ? `<div class="conviction">Уверенность
+         <span class="dots">${Array.from({ length: 5 }, (_, i) =>
+           `<i class="${i < v.conviction ? 'on' : ''}" style="--i:${i}"></i>`).join('')}</span>
+         <b>${v.conviction}/5</b></div>` : '';
   return `
-    ${v.summary ? `<div class="panel accent"><div class="prose" style="font-size:16px">${prose(v.summary)}</div>${dots}</div>` : ''}
-    ${r.thesis ? `<div class="panel"><h3>Тезис</h3><div class="prose">${prose(r.thesis)}</div></div>` : ''}`;
+    ${v.summary ? `<div class="panel accent reveal"><div class="prose lead">${prose(v.summary)}</div>${dots}</div>` : ''}
+    ${r.thesis ? `<div class="panel reveal"><h3>Тезис</h3><div class="prose">${prose(r.thesis)}</div></div>` : ''}`;
 }
 
 function market(r) {
@@ -168,7 +205,7 @@ function market(r) {
   ].filter(c => c[1] !== '—' || c[0] === 'Цена');
 
   const pools = (m.pools || []).length ? `
-    <div class="tbl-wrap" style="margin-top:12px">
+    <div class="tbl-wrap reveal" style="margin-top:12px">
       <table><thead><tr><th>Пул</th><th>DEX</th><th class="num">Ликвидность</th><th class="num">Объём 24ч</th></tr></thead>
       <tbody>${m.pools.map(p => `<tr>
         <td><strong>${esc(p.pair || '')}</strong></td>
@@ -178,8 +215,10 @@ function market(r) {
       </tr>`).join('')}</tbody></table>
     </div>` : '';
 
-  const notes = m.notes ? `<div class="panel" style="margin-top:12px"><div class="prose">${prose(m.notes)}</div></div>` : '';
-  return metricGrid(cells) + pools + notes;
+  return metricGrid(cells)
+    + (m.charts || []).map(chartBlock).join('')
+    + pools
+    + (m.notes ? `<div class="panel reveal" style="margin-top:12px"><div class="prose">${prose(m.notes)}</div></div>` : '');
 }
 
 function onchain(r) {
@@ -195,8 +234,10 @@ function onchain(r) {
   ].filter(c => c[1] !== '—');
   if (cells.length) parts.push(metricGrid(cells));
 
+  parts.push((o.charts || []).map(chartBlock).join(''));
+
   if ((o.topHolders || []).length) {
-    parts.push(`<div class="tbl-wrap" style="margin-top:12px">
+    parts.push(`<div class="tbl-wrap reveal" style="margin-top:12px">
       <table><thead><tr><th>Держатель</th><th>Адрес</th><th class="num">Доля</th><th class="num">Стоимость</th></tr></thead>
       <tbody>${o.topHolders.map(h => `<tr>
         <td><strong>${esc(h.label || 'Неизвестный')}</strong>${h.tag ? ` <span class="tag">${esc(h.tag)}</span>` : ''}</td>
@@ -210,12 +251,12 @@ function onchain(r) {
     const movers = (o.smartMoney.movers || []).map(m => `
       <div class="kv"><span class="k">${esc(m.label || shortAddr(m.address))}</span>
       <span class="v mono ${signClass(m.netUsd)}">${usd(m.netUsd)}</span></div>`).join('');
-    parts.push(`<div class="panel" style="margin-top:12px"><h3>Умные деньги</h3>
+    parts.push(`<div class="panel reveal" style="margin-top:12px"><h3>Умные деньги</h3>
       ${o.smartMoney.notes ? `<div class="prose">${prose(o.smartMoney.notes)}</div>` : ''}${movers}</div>`);
   }
 
   if ((o.flows || []).length) {
-    parts.push(`<div class="tbl-wrap" style="margin-top:12px">
+    parts.push(`<div class="tbl-wrap reveal" style="margin-top:12px">
       <table><thead><tr><th>Период</th><th class="num">Приток на CEX</th><th class="num">Отток с CEX</th><th class="num">Нетто</th></tr></thead>
       <tbody>${o.flows.map(f => {
         const net = f.net != null ? f.net : (f.cexOut != null && f.cexIn != null ? f.cexOut - f.cexIn : null);
@@ -225,7 +266,7 @@ function onchain(r) {
       }).join('')}</tbody></table></div>`);
   }
 
-  if (o.notes) parts.push(`<div class="panel" style="margin-top:12px"><div class="prose">${prose(o.notes)}</div></div>`);
+  if (o.notes) parts.push(`<div class="panel reveal" style="margin-top:12px"><div class="prose">${prose(o.notes)}</div></div>`);
   return parts.join('');
 }
 
@@ -234,8 +275,8 @@ function fundamentals(r) {
   if (!f) return '';
   const parts = [];
 
-  if (f.what) parts.push(`<div class="panel"><h3>Что это</h3><div class="prose">${prose(f.what)}</div></div>`);
-  if (f.revenue) parts.push(`<div class="panel"><h3>Как зарабатывает</h3><div class="prose">${prose(f.revenue)}</div></div>`);
+  if (f.what) parts.push(`<div class="panel reveal"><h3>Что это</h3><div class="prose">${prose(f.what)}</div></div>`);
+  if (f.revenue) parts.push(`<div class="panel reveal"><h3>Как зарабатывает</h3><div class="prose">${prose(f.revenue)}</div></div>`);
 
   const cells = [
     ['TVL',             usd(f.tvl), f.tvlChange30d != null ? `${pct(f.tvlChange30d, { sign: true })} за 30д` : ''],
@@ -245,38 +286,42 @@ function fundamentals(r) {
   ].filter(c => c[1] !== '—');
   if (cells.length) parts.push(`<div style="margin-top:12px">${metricGrid(cells)}</div>`);
 
+  parts.push((f.charts || []).map(chartBlock).join(''));
+
   const alloc = f.tokenomics?.allocations || [];
   if (alloc.length) {
     const total = alloc.reduce((s, a) => s + (a.pct || 0), 0) || 1;
-    parts.push(`<div class="panel" style="margin-top:12px"><h3>Распределение предложения</h3>
+    parts.push(`<div class="panel reveal" style="margin-top:12px"><h3>Распределение предложения</h3>
       <div class="stack">${alloc.map((a, i) =>
-        `<i style="width:${((a.pct || 0) / total * 100).toFixed(2)}%;background:${PALETTE[i % PALETTE.length]}" title="${esc(a.name)}"></i>`).join('')}</div>
+        `<i style="width:${((a.pct || 0) / total * 100).toFixed(2)}%;background:${CATEGORICAL[i % CATEGORICAL.length]};--i:${i}" title="${esc(a.name)}"></i>`).join('')}</div>
       <div class="legend">${alloc.map((a, i) =>
-        `<div><i style="background:${PALETTE[i % PALETTE.length]}"></i>${esc(a.name)}<b>${pct(a.pct, { asFraction: true })}</b></div>`).join('')}</div>
+        `<div><i style="background:${CATEGORICAL[i % CATEGORICAL.length]}"></i>${esc(a.name)}<b>${pct(a.pct, { asFraction: true })}</b></div>`).join('')}</div>
       ${f.tokenomics.emissions ? `<div class="prose" style="margin-top:16px">${prose(f.tokenomics.emissions)}</div>` : ''}
     </div>`);
   }
 
   if ((f.unlocks || []).length) {
-    parts.push(`<div class="panel" style="margin-top:12px"><h3>Разлоки</h3>
-      ${f.unlocks.map(u => `<div class="unlock">
-        <div class="date">${esc(date(u.date, { short: true }))}</div>
+    parts.push(`<div class="panel reveal" style="margin-top:12px"><h3>Разлоки</h3>
+      ${f.unlocks.map(u => {
+        const d = daysUntil(u.date);
+        return `<div class="unlock">
+        <div class="date">${esc(date(u.date, { short: true }))}${d != null ? `<span class="in">через ${d} ${plural(d, 'день', 'дня', 'дней')}</span>` : ''}</div>
         <div class="body">
           <div class="t">${esc(u.name || 'Разлок')}${u.pctSupply != null ? ` · ${pct(u.pctSupply, { asFraction: true, digits: 2 })} предложения` : ''}</div>
           ${u.note ? `<div class="n">${inline(u.note)}</div>` : ''}
         </div>
         <div class="amt">${usd(u.amountUsd)}</div>
-      </div>`).join('')}</div>`);
+      </div>`; }).join('')}</div>`);
   }
 
   if ((f.team || []).length) {
-    parts.push(`<div class="panel" style="margin-top:12px"><h3>Команда и инвесторы</h3>
+    parts.push(`<div class="panel reveal" style="margin-top:12px"><h3>Команда и инвесторы</h3>
       ${f.team.map(t => `<div class="kv"><span class="k">${esc(t.role || '')}</span>
         <span class="v">${esc(t.name || '')}${t.note ? ` <span class="faint">— ${esc(t.note)}</span>` : ''}</span></div>`).join('')}</div>`);
   }
 
   if ((f.highlights || []).length) {
-    parts.push(`<div class="panel" style="margin-top:12px"><h3>Ключевое</h3>
+    parts.push(`<div class="panel reveal" style="margin-top:12px"><h3>Ключевое</h3>
       <ul class="bullets">${f.highlights.map(h => `<li>${inline(h)}</li>`).join('')}</ul></div>`);
   }
   return parts.join('');
@@ -291,21 +336,23 @@ function derivatives(r) {
     ['Long/Short',       d.longShort != null ? d.longShort.toFixed(2) : '—'],
     ['Ликвидации 24ч',   usd(d.liq24h), d.liqLongShare != null ? `${pct(d.liqLongShare, { asFraction: true })} лонги` : ''],
   ].filter(c => c[1] !== '—');
-  const notes = d.notes ? `<div class="panel" style="margin-top:12px"><div class="prose">${prose(d.notes)}</div></div>` : '';
-  return (cells.length ? metricGrid(cells) : '') + notes;
+  return (cells.length ? metricGrid(cells) : '')
+    + (d.charts || []).map(chartBlock).join('')
+    + (d.notes ? `<div class="panel reveal" style="margin-top:12px"><div class="prose">${prose(d.notes)}</div></div>` : '');
 }
 
 function narrative(r) {
   const n = r.narrative;
   if (!n) return '';
   const parts = [];
-  if (n.sentiment) parts.push(`<div class="panel"><h3>Настроения</h3><div class="prose">${prose(n.sentiment)}</div></div>`);
+  if (n.sentiment) parts.push(`<div class="panel reveal"><h3>Настроения</h3><div class="prose">${prose(n.sentiment)}</div></div>`);
+  parts.push((n.charts || []).map(chartBlock).join(''));
   if ((n.catalysts || []).length) {
-    parts.push(`<div class="panel" style="margin-top:12px"><h3>Катализаторы</h3>
+    parts.push(`<div class="panel reveal" style="margin-top:12px"><h3>Катализаторы</h3>
       <ul class="bullets">${n.catalysts.map(c => `<li>${inline(typeof c === 'string' ? c : `${c.date ? date(c.date) + ' — ' : ''}${c.title || ''}`)}</li>`).join('')}</ul></div>`);
   }
   if ((n.news || []).length) {
-    parts.push(`<div class="panel news" style="margin-top:12px"><h3>Новости</h3>
+    parts.push(`<div class="panel news reveal" style="margin-top:12px"><h3>Новости</h3>
       ${n.news.map(x => {
         const href = safeUrl(x.url);
         const inner = `<span class="d">${esc(date(x.date, { short: true }))}</span>
@@ -325,8 +372,13 @@ function risks(r) {
   const order = { high: 0, med: 1, low: 2 };
   const sorted = list.slice().sort((a, b) => (order[a.severity] ?? 3) - (order[b.severity] ?? 3));
   const labels = { high: 'Высокий', med: 'Средний', low: 'Низкий' };
-  return `<div class="panel">${sorted.map(x => `
-    <div class="risk ${esc(x.severity || 'low')}">
+  const counts = ['high', 'med', 'low'].map(s => list.filter(x => x.severity === s).length);
+  return `<div class="risk-summary reveal">
+      ${['high', 'med', 'low'].map((s, i) => counts[i]
+        ? `<span class="rs ${s}"><i></i>${counts[i]} ${labels[s].toLowerCase()}</span>` : '').join('')}
+    </div>
+    <div class="panel">${sorted.map(x => `
+    <div class="risk ${esc(x.severity || 'low')} reveal">
       <span class="dot"></span>
       <div style="flex:1;min-width:0">
         <div class="t">${esc(x.title || '')}</div>
@@ -342,12 +394,25 @@ function position(r) {
   if (!p && !scen.length) return '';
   const parts = [];
 
+  // Scenario ladder when every scenario carries a numeric value; cards otherwise.
+  if (scen.length && scen.every(s => typeof s.value === 'number')) {
+    parts.push(chartBlock({
+      type: 'ladder', title: 'СЦЕНАРИИ ПРОТИВ ТЕКУЩЕЙ ЦЕНЫ', unit: 'usd',
+      current: r.market?.price, currentLabel: price(r.market?.price),
+      series: scen.map(s => ({
+        label: `${s.name}${s.prob != null ? ` · ${pct(s.prob, { asFraction: true, digits: 0 })}` : ''}`,
+        value: s.value, display: s.target || price(s.value),
+        tone: r.market?.price && s.value < r.market.price ? 'neg' : 'pos',
+      })),
+    }));
+  }
+
   if (scen.length) {
     parts.push(`<div class="scen">${scen.map(s => `
-      <div class="panel">
+      <div class="panel reveal">
         <div class="name">${esc(s.name || '')}</div>
         <div class="tgt">${esc(s.target || '—')}</div>
-        ${s.prob != null ? `<div class="prob"><span class="bar"><i style="width:${(s.prob * 100).toFixed(0)}%"></i></span>${pct(s.prob, { asFraction: true, digits: 0 })}</div>` : ''}
+        ${s.prob != null ? `<div class="prob"><span class="bar"><i style="--w:${(s.prob * 100).toFixed(0)}%"></i></span>${pct(s.prob, { asFraction: true, digits: 0 })}</div>` : ''}
         ${s.detail ? `<div class="why">${inline(s.detail)}</div>` : ''}
       </div>`).join('')}</div>`);
   }
@@ -360,7 +425,7 @@ function position(r) {
       ['Размер',        p.size],
       ['Горизонт',      p.horizon],
     ].filter(([, v]) => v);
-    parts.push(`<div class="panel accent" style="margin-top:12px">
+    parts.push(`<div class="panel accent reveal" style="margin-top:12px">
       <h3>План</h3>
       ${rows.map(([k, v]) => `<div class="kv"><span class="k">${esc(k)}</span><span class="v">${inline(v)}</span></div>`).join('')}
       ${p.notes ? `<div class="prose" style="margin-top:14px">${prose(p.notes)}</div>` : ''}
@@ -372,7 +437,7 @@ function position(r) {
 function sources(r) {
   const s = r.sources || [];
   if (!s.length) return '';
-  return `<div class="panel">${s.map(x => {
+  return `<div class="panel reveal">${s.map(x => {
     const href = safeUrl(x.url);
     const label = href
       ? `<a class="link" href="${esc(href)}" target="_blank" rel="noopener noreferrer">${esc(x.name)}</a>`
@@ -385,7 +450,7 @@ function sources(r) {
 /* ── Bits ────────────────────────────────────────────────────── */
 
 function metricGrid(cells) {
-  return `<div class="metrics">${cells.map(([k, v, s]) => `
+  return `<div class="metrics reveal">${cells.map(([k, v, s]) => `
     <div class="metric"><div class="k">${esc(k)}</div><div class="v">${v}</div>${s ? `<div class="s">${s}</div>` : ''}</div>
   `).join('')}</div>`;
 }
@@ -396,9 +461,24 @@ function wireCopy() {
       try {
         await navigator.clipboard.writeText(btn.dataset.copy);
         const old = btn.innerHTML;
+        btn.classList.add('done');
         btn.textContent = 'скопировано';
-        setTimeout(() => { btn.innerHTML = old; }, 1200);
+        setTimeout(() => { btn.innerHTML = old; btn.classList.remove('done'); }, 1200);
       } catch { /* clipboard unavailable */ }
+    });
+  });
+}
+
+/** Clicking a section heading copies a deep link to it. */
+function wireAnchors() {
+  document.querySelectorAll('.anchor').forEach(a => {
+    a.addEventListener('click', async e => {
+      e.preventDefault();
+      const url = `${location.origin}${location.pathname}${location.search}${a.getAttribute('href')}`;
+      try { await navigator.clipboard.writeText(url); } catch { /* ignore */ }
+      location.hash = a.getAttribute('href');
+      a.classList.add('copied');
+      setTimeout(() => a.classList.remove('copied'), 1200);
     });
   });
 }

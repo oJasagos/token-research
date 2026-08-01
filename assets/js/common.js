@@ -101,6 +101,9 @@ export function safeUrl(u) {
   return parsed.protocol === 'http:' || parsed.protocol === 'https:' ? parsed.href : null;
 }
 
+/** True when the reader asked the OS to cut down on motion. */
+export const reduced = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
+
 /** Escape for safe interpolation into innerHTML. */
 export function esc(s) {
   if (s == null) return '';

@@ -48,7 +48,12 @@ const reportCount = Object.keys(bundle).length - 1;
 
 const stripImports = s => s.replace(/^import\s[\s\S]*?from\s+'[^']+';\s*$/gm, '');
 
-const common = stripImports(read('assets/js/common.js')).replace(/^export\s+/gm, '');
+/* Shared modules, in dependency order: charts.js and anim.js both build on
+   common.js. Stripping `export` drops them all into one scope, which is what
+   the two entry points below expect. Miss one and the page renders nothing. */
+const shared = ['assets/js/common.js', 'assets/js/charts.js', 'assets/js/anim.js']
+  .map(f => stripImports(read(f)).replace(/^export\s+/gm, ''))
+  .join('\n');
 const listJs = stripImports(read('assets/js/index.js'));
 const reportJs = stripImports(read('assets/js/report.js'));
 
@@ -83,7 +88,7 @@ window.__BUNDLE__ = ${jsonForScriptTag(bundle)};
 </script>
 
 <script>
-${common}
+${shared}
 
 function initListView() {
 ${listJs}
@@ -160,6 +165,15 @@ ${content}
 </body>
 </html>
 `;
+
+/* Concatenating modules into one scope can collide names that were fine when
+   each file was isolated. Parse the result so the build fails here rather than
+   silently shipping a page that renders nothing. */
+const scripts = [...content.matchAll(/<script>([\s\S]*?)<\/script>/g)].map(m => m[1]);
+scripts.forEach((src, i) => {
+  try { new (require('vm').Script)(src); }
+  catch (e) { console.error(`\nBuild aborted: script block ${i + 1} does not parse.\n${e.message}\n`); process.exit(1); }
+});
 
 fs.mkdirSync(path.join(root, 'dist'), { recursive: true });
 fs.writeFileSync(path.join(root, 'dist/standalone.html'), page);

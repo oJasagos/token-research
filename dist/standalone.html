@@ -433,6 +433,323 @@ ul.bullets li::before {
   .wrap, .rep-nav-inner { padding: 0 16px; }
 }
 
+/* ═══════════════════════════════════════════════════════════════
+   Motion, charts and the richer surfaces.
+   Palette is unchanged; the categorical set used by charts lives in
+   charts.js and was validated for CVD against this background.
+   ═══════════════════════════════════════════════════════════════ */
+
+:root {
+  --cat-1: #7c83ff;
+  --cat-2: #00a3b4;
+  --cat-3: #e0704f;
+  --cat-4: #b06ae0;
+  --ease: cubic-bezier(.22, 1, .36, 1);
+}
+
+/* ── entrance ────────────────────────────────────────────────── */
+
+.reveal { opacity: 0; transform: translateY(14px); }
+.reveal.in {
+  opacity: 1; transform: none;
+  transition: opacity .55s var(--ease), transform .55s var(--ease);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal, .reveal.in { opacity: 1 !important; transform: none !important; transition: none !important; }
+  * { animation-duration: .001ms !important; transition-duration: .001ms !important; }
+  html { scroll-behavior: auto; }
+}
+
+/* ── reading progress + back to top ──────────────────────────── */
+
+.progress {
+  position: fixed; inset: 0 0 auto 0; height: 2px; z-index: 60;
+  background: transparent; pointer-events: none;
+}
+.progress i {
+  display: block; height: 100%; width: 100%;
+  background: linear-gradient(90deg, var(--accent), #b06ae0);
+  transform-origin: 0 50%; transform: scaleX(0);
+}
+
+.to-top {
+  position: fixed; right: 22px; bottom: 22px; z-index: 55;
+  width: 40px; height: 40px; display: grid; place-items: center;
+  border-radius: 50%; cursor: pointer;
+  background: var(--bg-elev-2); border: 1px solid var(--border-hi); color: var(--text-dim);
+  opacity: 0; transform: translateY(10px) scale(.9); pointer-events: none;
+  transition: opacity .3s var(--ease), transform .3s var(--ease), color .2s, border-color .2s;
+}
+.to-top.on { opacity: 1; transform: none; pointer-events: auto; }
+.to-top:hover { color: var(--text); border-color: var(--accent); }
+.to-top svg { width: 16px; height: 16px; }
+
+/* ── index: summary tiles ────────────────────────────────────── */
+
+.tiles {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 12px; padding-bottom: 26px;
+}
+.tile {
+  background: var(--bg-elev); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 15px 17px;
+  transition-delay: calc(var(--i, 0) * 60ms);
+}
+.tile .k { font-size: 10.5px; letter-spacing: .09em; text-transform: uppercase; color: var(--text-faint); }
+.tile .v { font-family: var(--mono); font-size: 19px; letter-spacing: -0.02em; margin: 7px 0 3px; }
+.tile .s { font-size: 11.5px; color: var(--text-faint); font-family: var(--mono); }
+
+/* ── index: controls ─────────────────────────────────────────── */
+
+.search kbd {
+  position: absolute; right: 10px;
+  font-family: var(--mono); font-size: 11px; color: var(--text-faint);
+  border: 1px solid var(--border); border-radius: 5px;
+  padding: 1px 6px; background: var(--bg);
+  transition: opacity .15s;
+}
+.search input:focus ~ kbd, .search input:not(:placeholder-shown) ~ kbd { opacity: 0; }
+
+.chip-group { display: inline-flex; gap: 7px; flex-wrap: wrap; }
+.chip-group + .chip-group { margin-left: 4px; padding-left: 12px; border-left: 1px solid var(--border); }
+.chip { position: relative; overflow: hidden; }
+.chip::after {
+  content: ""; position: absolute; inset: 0; background: var(--accent);
+  opacity: 0; transition: opacity .2s;
+}
+.chip:active::after { opacity: .12; }
+
+.sort { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--text-faint); white-space: nowrap; }
+.sort select {
+  background: var(--bg-elev); border: 1px solid var(--border); border-radius: 9px;
+  color: var(--text-dim); font: inherit; font-size: 13px; padding: 8px 11px;
+  cursor: pointer; outline: none; transition: border-color .15s, color .15s;
+}
+.sort select:hover, .sort select:focus { border-color: var(--border-hi); color: var(--text); }
+
+.result-count {
+  font-family: var(--mono); font-size: 12px; color: var(--text-faint);
+  padding-bottom: 14px; min-height: 18px;
+}
+
+/* ── index: cards ────────────────────────────────────────────── */
+
+.card { position: relative; overflow: hidden; transition-delay: calc(var(--i, 0) * 45ms); }
+.card::before {
+  content: ""; position: absolute; inset: -1px; border-radius: inherit;
+  background: radial-gradient(420px circle at var(--mx, 50%) var(--my, 0%), #7c83ff20, transparent 65%);
+  opacity: 0; transition: opacity .35s; pointer-events: none;
+}
+.card:hover::before { opacity: 1; }
+.card.in:hover { transform: translateY(-3px); }
+
+.card-go {
+  position: absolute; right: 18px; bottom: 16px;
+  width: 15px; height: 15px; color: var(--accent);
+  opacity: 0; transform: translateX(-6px);
+  transition: opacity .28s var(--ease), transform .28s var(--ease);
+}
+.card-go svg { width: 100%; height: 100%; }
+.card:hover .card-go { opacity: 1; transform: none; }
+.card:hover .card-foot > span:last-child { opacity: 0; }
+.card-foot > span:last-child { transition: opacity .2s; }
+
+/* ── report: header extras ───────────────────────────────────── */
+
+.chip-countdown {
+  display: inline-flex; align-items: center; gap: 7px;
+  font-size: 11.5px; font-family: var(--mono); color: var(--amber);
+  border: 1px solid #fbbf2438; background: #fbbf2410;
+  border-radius: 999px; padding: 3px 10px;
+}
+.chip-countdown i {
+  width: 5px; height: 5px; border-radius: 50%; background: var(--amber);
+  animation: blink 2.4s ease-in-out infinite;
+}
+@keyframes blink { 0%, 100% { opacity: 1 } 50% { opacity: .25 } }
+
+.addr.done { color: var(--green); border-color: #4ade8055; }
+
+h2 .anchor { color: inherit; position: relative; }
+h2 .anchor::after {
+  content: "#"; margin-left: 8px; color: var(--accent);
+  opacity: 0; transition: opacity .2s;
+}
+h2 .anchor:hover::after { opacity: .7; }
+h2 .anchor.copied::after { content: "скопировано"; opacity: 1; letter-spacing: .04em; }
+
+.prose.lead p { color: var(--text); font-size: 16px; }
+
+.conviction {
+  display: flex; align-items: center; gap: 10px;
+  font-size: 12px; color: var(--text-faint); margin-top: 14px;
+}
+.conviction .dots { display: inline-flex; gap: 5px; }
+.conviction .dots i {
+  width: 7px; height: 7px; border-radius: 50%; background: var(--border-hi);
+}
+.conviction .dots i.on {
+  background: var(--accent); box-shadow: 0 0 8px #7c83ff88;
+  animation: pop .4s var(--ease) backwards; animation-delay: calc(var(--i) * 90ms + .2s);
+}
+@keyframes pop { from { transform: scale(0); opacity: 0 } }
+.conviction b { color: var(--text-dim); font-family: var(--mono); font-weight: 400; }
+
+/* metrics: subtle lift so the grid feels alive */
+.metric { transition: background .2s; }
+.metric:hover { background: var(--bg-elev-2); }
+
+/* unlock rows get a countdown */
+.unlock .date { display: flex; flex-direction: column; gap: 2px; width: 104px; }
+.unlock .date .in { font-size: 10.5px; color: var(--amber); }
+
+/* risk summary strip */
+.risk-summary { display: flex; gap: 9px; flex-wrap: wrap; margin-bottom: 12px; }
+.rs {
+  display: inline-flex; align-items: center; gap: 7px;
+  font-size: 12px; color: var(--text-dim); font-family: var(--mono);
+  border: 1px solid var(--border); border-radius: 999px; padding: 4px 11px;
+}
+.rs i { width: 6px; height: 6px; border-radius: 50%; }
+.rs.high i { background: var(--red); }
+.rs.med  i { background: var(--amber); }
+.rs.low  i { background: var(--text-faint); }
+
+/* stacked allocation bar animates open */
+.stack i { animation: grow .7s var(--ease) backwards; animation-delay: calc(var(--i, 0) * 110ms + .15s); }
+@keyframes grow { from { width: 0 !important } }
+
+/* scenario probability bars */
+.scen .bar i, .c-bar-track i { transition: width .8s var(--ease); }
+.scen .bar i { width: var(--w); }
+
+/* ── charts ──────────────────────────────────────────────────── */
+
+.chart {
+  background: var(--bg-elev); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 18px 20px 16px; margin-top: 12px;
+}
+.chart-title {
+  font-size: 10.5px; letter-spacing: .1em; text-transform: uppercase;
+  color: var(--text-faint); margin-bottom: 14px;
+}
+.chart-plot { position: relative; }
+.chart-note { font-size: 13px; color: var(--text-dim); margin-top: 14px; }
+
+.chart-svg { width: 100%; height: 210px; display: block; overflow: visible; }
+.c-axis { stroke: var(--border-hi); stroke-width: 1; }
+.c-grid { stroke: var(--border); stroke-width: 1; stroke-dasharray: 3 5; }
+.c-line { fill: none; stroke: var(--accent); stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; vector-effect: non-scaling-stroke; }
+.c-dot-last { fill: var(--accent); stroke: var(--bg-elev); stroke-width: 2; }
+.c-cross { stroke: var(--border-hi); stroke-width: 1; }
+.c-dot { fill: var(--accent); stroke: var(--bg-elev); stroke-width: 2; }
+
+.chart-tip {
+  position: absolute; top: -6px; pointer-events: none; opacity: 0;
+  background: var(--bg-elev-2); border: 1px solid var(--border-hi);
+  border-radius: 8px; padding: 6px 10px; white-space: nowrap;
+  transition: opacity .15s; z-index: 5;
+}
+.chart-tip b { display: block; font-family: var(--mono); font-size: 13px; }
+.chart-tip span { font-size: 11px; color: var(--text-faint); }
+
+.chart-axis { position: relative; height: 16px; margin-top: 2px; }
+.chart-axis span {
+  position: absolute; font-family: var(--mono); font-size: 11px; color: var(--text-faint);
+}
+
+.c-bars { display: flex; flex-direction: column; gap: 11px; }
+.c-bar { display: grid; grid-template-columns: minmax(88px, 1fr) 2.4fr auto; align-items: center; gap: 14px; }
+.c-bar.muted { opacity: .45; }
+.c-bar-l { font-size: 13px; color: var(--text-dim); }
+.c-bar-track { height: 10px; background: var(--bg-elev-2); border-radius: 5px; overflow: hidden; }
+.c-bar-track i {
+  display: block; height: 100%; width: 0; border-radius: 5px;
+  background: var(--accent);
+}
+.c-bar.pos .c-bar-track i { background: var(--green); }
+.c-bar.neg .c-bar-track i { background: var(--red); }
+.c-bar-v { font-family: var(--mono); font-size: 13px; white-space: nowrap; }
+.c-bar.pos .c-bar-v { color: var(--green); }
+.c-bar.neg .c-bar-v { color: var(--red); }
+
+.c-ratio {
+  margin-top: 14px; padding-top: 13px; border-top: 1px solid var(--border);
+  font-size: 13px; color: var(--text-dim);
+}
+
+/* scenario ladder */
+.c-ladder { padding: 6px 0 4px; }
+.c-ladder-track {
+  position: relative; height: 3px; border-radius: 2px; margin: 24px 0 2px;
+  background: linear-gradient(90deg, #f8717133, var(--border-hi) 50%, #4ade8033);
+}
+.c-now { position: absolute; top: -22px; width: 1px; height: 26px; background: var(--text-dim); }
+.c-now span {
+  position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%);
+  font-family: var(--mono); font-size: 11px; color: var(--text-dim); white-space: nowrap;
+  margin-bottom: 4px;
+}
+.c-rung {
+  position: relative; height: 42px;
+  animation: fadeIn .5s var(--ease) backwards; animation-delay: calc(var(--i) * 110ms);
+}
+@keyframes fadeIn { from { opacity: 0; transform: translateY(6px) } }
+.c-rung-dot {
+  position: absolute; left: var(--x); top: 22px; transform: translate(-50%, -50%);
+  width: 9px; height: 9px; border-radius: 50%; background: var(--accent);
+  box-shadow: 0 0 0 3px var(--bg-elev);
+}
+.c-rung-dot.pos { background: var(--green); }
+.c-rung-dot.neg { background: var(--red); }
+.c-rung-v {
+  position: absolute; left: var(--x); top: 0;
+  font-family: var(--mono); font-size: 13px; white-space: nowrap;
+}
+.c-rung-l {
+  position: absolute; left: var(--x); top: 30px;
+  font-size: 11.5px; color: var(--text-faint); white-space: nowrap;
+}
+
+/* numbers behind every chart */
+.chart-data { margin-top: 14px; }
+.chart-data summary {
+  font-size: 12px; color: var(--text-faint); cursor: pointer;
+  list-style: none; display: inline-flex; align-items: center; gap: 6px;
+}
+.chart-data summary::-webkit-details-marker { display: none; }
+.chart-data summary::before { content: "▸"; transition: transform .2s; }
+.chart-data[open] summary::before { transform: rotate(90deg); }
+.chart-data summary:hover { color: var(--text-dim); }
+.chart-data table { margin-top: 10px; min-width: 0; font-size: 12.5px; }
+.chart-data th { text-transform: none; letter-spacing: 0; font-size: 12.5px; color: var(--text-dim); font-weight: 400; padding: 7px 0; }
+.chart-data td { text-align: right; font-family: var(--mono); padding: 7px 0; }
+
+@media (max-width: 640px) {
+  .c-bar { grid-template-columns: 1fr auto; gap: 6px 10px; }
+  .c-bar-track { grid-column: 1 / -1; }
+  .to-top { right: 14px; bottom: 14px; }
+  .chip-group + .chip-group { margin-left: 0; padding-left: 0; border-left: none; }
+}
+
+/* native select chrome does not follow the theme — draw our own arrow */
+.sort select {
+  appearance: none; -webkit-appearance: none;
+  padding-right: 30px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2363636f' stroke-width='2' stroke-linecap='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 9px center;
+  background-size: 13px;
+}
+.sort select option { background: var(--bg-elev-2); color: var(--text); }
+
+.chart-axis span { white-space: nowrap; }
+
+/* a contract address is one unbreakable token — let it wrap rather than push
+   the whole page sideways on a phone */
+code.mono { overflow-wrap: anywhere; word-break: break-word; }
+
 #view-list[hidden], #view-report[hidden] { display: none !important; }
 </style>
 
@@ -448,15 +765,24 @@ ul.bullets li::before {
     <p>Личная база исследований: рынок, on-chain, фундамент, деривативы и риски — по каждому токену в одном месте.</p>
   </div>
 
+  <div class="tiles" id="summary"></div>
+
   <div class="controls">
     <label class="search">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
         <circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/>
       </svg>
       <input id="q" type="search" placeholder="Поиск по тикеру, названию, сети…" autocomplete="off" spellcheck="false">
+      <kbd>/</kbd>
     </label>
     <div class="chips" id="filters"></div>
+    <label class="sort">
+      <span>Сортировка</span>
+      <select id="sort" aria-label="Сортировка"></select>
+    </label>
   </div>
+
+  <div class="result-count" id="count"></div>
 
   <main id="list" class="grid" aria-live="polite"></main>
 
@@ -488,7 +814,7 @@ ul.bullets li::before {
 </div>
 
 <script>
-window.__BUNDLE__ = {"data/index.json":{"updated":"2026-07-29","reports":[{"slug":"lit","symbol":"LIT","name":"Lighter","chain":"Ethereum","date":"2026-07-29","stance":"watch","price":2.31,"change24h":4.58,"mcap":576829842,"summary":"Логику надо разворачивать: до 27 декабря разлоков нет вообще, а клифф их запускает, а не заканчивает. Чистое окно сейчас. Зона 1.8-1.9$ хорошая, но выходить до декабря."},{"slug":"hype","symbol":"HYPE","name":"Hyperliquid","chain":"Hyperliquid L1","date":"2026-07-28","stance":"bearish","price":55.37,"change24h":-1.97,"mcap":12319739020,"summary":"HYPE как бизнес очень нравится, а что происходит с предложением - вообще не нравится. Сжигают 0.84 млн монет в месяц против разлока в 9.92 млн. По 55$ не беру, жду 38-42$."}]},"data/reports/hype.json":{"slug":"hype","symbol":"HYPE","name":"Hyperliquid","chain":"Hyperliquid L1","sector":"Perp DEX / L1","date":"2026-07-28","updated":"2026-07-28T22:48:00Z","verdict":{"stance":"bearish","conviction":4,"summary":"HYPE как бизнес очень нравится. Что происходит с предложением - вообще не нравится. Выкуп настоящий, 99% комиссий автоматом идут на покупку монеты, и она формально сожжена голосованием валидаторов. Но сжигают **0.84 млн в месяц**, а разлок выдаёт **9.92 млн**. Один к 11.8. Даже если ничего не изменится, через полгода цена **40$ вместо 55$** просто от размытия. По 55$ не беру."},"thesis":"Переписал разбор после того, как посчитал сжигание и разлок в монетах, а не в долларах. В долларах выкуп звучит внушительно, в монетах он перекрывает 8.5% месячного разлока.\n\nВ 2025 нарратив про дефляционный токен был честным. Разлоков не было, годовой клифф не прошёл, комиссии шли темпом 145M$ в месяц. Всё сменилось в январе 2026: пошли ежемесячные транши по 9.92 млн, а комиссии к тому моменту уже сложились вдвое. Два фактора ударили одновременно, а формулировка так и осталась старая.\n\nОтдельно неприятная механика: выкуп фиксирован в долларах, а не в монетах. При 20$ те же деньги забирали с рынка около 3 млн монет в месяц, при 55$ забирают 0.84 млн. Чем выше цена, тем слабее то, что её держит.\n\nВсё упирается в одну переменную - месячные комиссии. Тезис ломается, если они уйдут выше 100M$ два месяца подряд.\n\nОчень хочется увидеть вынос в 38-42$ и разворот оттуда. Будет такая скидка - беру.","market":{"price":55.37,"change24h":-1.97,"change7d":-8.32,"change30d":-8.92,"mcap":12319739020,"fdv":52907892387,"volume24h":467557435,"circulating":222445714,"totalSupply":955307079,"ath":76.7,"athDate":"2026-06-16","notes":"MC/FDV **0.23**. Считать этот актив надо по FDV, потому что разлоки месяц за месяцем переводят FDV в капитализацию. FDV к текущему темпу выручки это **83x**, по капитализации в обороте 19.4x.\n\nTotal supply 955.3 млн вместо 1B - разница это монеты Assistance Fund, признанные сожжёнными."},"onchain":{"notes":"Assistance Fund это системный адрес `0xfefefefefefefefefefefefefefefefefefefefe`, встроенный в уровень исполнения L1. Комиссии конвертируются в HYPE автоматически, механизма вывода не предусмотрено. В декабре 2025 валидаторы проголосовали признать содержимое фонда сожжённым: 85% за, 7% против, 8% воздержались. Баланс на июль 2026 около 45.65 млн, сходится с разницей между максимальным предложением и текущим total supply.\n\nРаспределение по держателям проверить нечем: HYPE нативный актив своего L1, стандартные ончейн-источники его не индексируют. Это дыра в анализе, и я о ней знаю.","smartMoney":{"notes":"На перп-рынке Hyperliquid за сутки: 13718 трейдеров, объём 533M$, покупки 245.8M$ против продаж 287.2M$. Чистый отток **41.4M$**."}},"fundamentals":{"what":"Биржа перпов на своём L1. Книга заявок тут и есть база данных сети: каждая заявка, каждое исполнение, каждая ликвидация лежат в блоке. Нет доверенного сервера, который сводит сделки у себя, а в сеть кладёт результат.\n\nАналогия ломается в одном месте. Валидаторов немного, и скорость держится ровно на этом. Тут первична скорость, а децентрализация подогнана под неё.\n\nПоверх биржи работает HyperEVM с TVL 6.35B$, но заметного своего потока комиссий он пока не даёт. Держу как опцион, а не как выручку.","revenue":"Комиссии с торговли. Всё. Дальше 99% автоматом уходит на покупку HYPE с открытого рынка, 1% вкладчикам HLP.\n\nЗа сутки: перпы **97.0%** (2.15M$), спот 2.3% (51.5к$), HLP 0.7% (15.2к$). Диверсификации нет вообще, падает объём перпов - падает всё.","tvl":6345989410,"fees30d":52561541,"priceToFees":19.4,"highlights":["Комиссии за всё время **1.449B$**, за 12 месяцев **1.035B$**. Текущий темп 634M$ в год, это минус 39% к трейлингу.","От пика падение на **64%**: август 2025 дал 145M$ за месяц, июль 2026 идёт темпом 52.8M$.","Выкуп падает синхронно с комиссиями: 316.8M$ за 3 квартал 2025, 255.1M$ за 4 квартал, 192.3M$ за 1 квартал 2026.","Доля среди perp DEX **70%**, глобальная доля выросла с 4% до **6.2%** за полгода. Это очень нравится. Проблема не в конкурентах, а в том что остыл весь сектор.","Пиковый день по комиссиям: 10 октября 2025, 10.74M$ за сутки."],"team":[{"role":"Сооснователь","name":"Джефф Ян","note":"Гарвард, затем Hudson River Trading"},{"role":"Сооснователь","name":"iliensinc","note":"псевдоним, однокурсник по Гарварду"},{"role":"Команда","name":"около 11 человек","note":"Hudson River, Citadel, крупный тех"},{"role":"Финансирование","name":"внешних инвесторов нет","note":"отказ от раунда по оценке 1B$, чтобы не раздавать аллокации"}],"tokenomics":{"allocations":[{"name":"В обороте","pct":0.2224},{"name":"Core contributors, в вестинге","pct":0.238},{"name":"Прочее нераспределённое","pct":0.4949},{"name":"Сожжено фондом","pct":0.0447}],"emissions":"Core contributors получили около 23.8% предложения, это примерно 238 млн HYPE. Годовой клифф, дальше линейный вестинг 24 месяца до 2027. С января 2026 транши идут ежемесячно, шестого числа.\n\nИнвесторских аллокаций нет, потому что инвесторов нет. Весь навес это команда - и это заметно лучше, чем венчурные монеты по цене в двадцать раз ниже рынка."},"unlocks":[{"date":"2026-08-06","name":"Core contributors","pctSupply":0.0099,"amountUsd":549000000,"note":"9.92 млн монет, как и каждый месяц"},{"date":"2026-09-06","name":"Core contributors","pctSupply":0.0099,"amountUsd":549000000,"note":"9.92 млн монет"},{"date":"2027-01-01","name":"Итого впереди","pctSupply":0.15,"amountUsd":8260000000,"note":"около 150 млн монет до конца вестинга, это 67% к текущему обороту"}]},"derivatives":{"oi":2321243756,"oiChange24h":-1.6,"fundingRate":0.00125,"fundingPeriod":"1ч, 10.95% годовых","liq24h":16728822,"liqLongShare":0.9916,"notes":"OI по всем биржам за месяц сжался с 2.70B$ до 2.32B$, это минус 14%. Внутри Hyperliquid 1.3B$.\n\nЛиквидаций за сутки на 16.7M$, из них **99.2% лонги**. Плечо методично вычищают с длинной стороны. Фандинг при этом положительный и умеренный, около 11% годовых."},"narrative":{"sentiment":"Нарратив про переток деривативов из CEX в ончейн живой, и Hyperliquid его главный бенефициар. Но он уже отыгран ростом до 76.70$ и теперь требует подтверждения цифрами, а цифры за год слабее.\n\nСпотовые ETF в США запущены и на одном из заходов собрали 111M$ притока. С 9 июля притоков нет, идут оттоки, единственное исключение 15 июля. Инструмент есть, спроса через него нет.\n\nХейс называл 150$ к августу 2026. До августа неделя, цена 55$. Разбирать стоит не цифру, а условие: для 150$ нужен мультипликатор около 70x к текущему темпу выручки, столько платили только на пике эйфории.","catalysts":["Возврат месячных комиссий выше 100M$ два месяца подряд - единственное, что реально ломает медвежью арифметику","HyperEVM как второй источник комиссий, пока это опцион, а не выручка","HIP-3, рынки от сторонних деплоеров, вклад в общие комиссии подтвердить отдельной цифрой не удалось","Окончание вестинга core contributors в 2027 - снятие навеса, но ждать долго"]},"risks":[{"severity":"high","title":"Разлок перевешивает сжигание в 12 раз","detail":"9.92 млн монет в месяц против 0.84 млн сожжённых. Чистое давление 9.08 млн монет, это 500M$ по текущей цене, и так до 2027 года. Чтобы механика развернулась, комиссии должны вырасти примерно в десять раз."},{"severity":"high","title":"Выручка сложилась почти втрое","detail":"145M$ в августе 2025 против 52.8M$ темпом в июле 2026, минус 64% от пика. Выкуп привязан к комиссиям жёстко и падает синхронно, без задержки и без возможности вмешаться управленчески."},{"severity":"med","title":"Один продукт","detail":"97% комиссий с перпов. Спад волатильности бьёт по Hyperliquid сильнее, чем по диверсифицированным сетям. HyperEVM даёт TVL, но не поток комиссий."},{"severity":"med","title":"Оценка по FDV","detail":"FDV 52.63B$ против текущего темпа выручки 634M$ это 83x. По капитализации в обороте 19.3x выглядит приличнее, но разлоки как раз и переводят FDV в капитализацию."},{"severity":"med","title":"Конкуренция за долю","detail":"Aster в сентябре 2025 на короткое время забрал больше половины рынка perp DEX. Лидерство устояло, но эпизод показал, что доля отбирается инцентивами быстрее, чем строится продуктом."},{"severity":"low","title":"Регуляторика и непрозрачность держателей","detail":"Биржа бессрочных фьючерсов с реальными объёмами и без KYC-периметра - очевидная мишень. Плюс концентрацию у топ-адресов проверить нечем: нативный актив собственного L1 не индексируется стандартными источниками."}],"scenarios":[{"name":"Медвежий","target":"19$","prob":0.25,"detail":"Комиссии 30M$ в месяц. Капитализация 5.4B$ при обороте 282 млн монет."},{"name":"Базовый, всё как сейчас","target":"40$","prob":0.45,"detail":"Комиссии 50M$, мультипликатор не меняется. Минус 27% получается из одного только разлока."},{"name":"Бычий","target":"94$","prob":0.22,"detail":"Комиссии 100M$ в месяц, удвоение от текущих. Такие месяцы были, июнь 2026 дал 81M$."},{"name":"Мечта","target":"135$","prob":0.08,"detail":"Возврат к пиковым 145M$ в месяц. Требует волатильности, которой сейчас нет."}],"position":{"entry":"**38-42$** первая покупка на треть объёма, цена сходится к базовому сценарию. **30-34$** добор до полного объёма. Выше 48$ не вхожу.","target":"94$ при отработке, промежуточная фиксация половины на 76$ - уровень исторического максимума.","invalidation":"Месячные комиссии выше 100M$ два месяца подряд ломают медвежий тезис: сжигание выходит на 1.8 млн монет и разрыв сокращается вдвое. Ниже 31$ по недельному закрытию выхожу и не усредняюсь.","size":"Не более 3-5% депозита, пока не пройдут два разлока подряд без обвала. Вход 40$, стоп 31$, риск 9$ на монету или 22.5%. На позицию 5000$ теряешь 1125$.","horizon":"2-4 квартала","notes":"**Здесь не покупаю.** Позиции нет, и открывать её по 55$ не буду. При базовом сценарии, где вообще ничего не меняется, честная цена 40$. Покупать на 27% выше своей же базы это не сделка, а надежда.\n\nОчень хочется увидеть вынос в 38-42$ и разворот оттуда. Будет такая скидка - беру треть объёма.\n\nЧего подтвердить не удалось: точный баланс Assistance Fund на цепочке за июль (цифра из вторичных источников, сходится с разницей supply, но прямого запроса к адресу не делал), точный поток в фонд после билдеров и HIP-3 деплоеров, распределение по держателям."},"sources":[{"name":"DefiLlama","note":"комиссии по дням за 578 дней, TVL, разбивка перпы/спот/HLP","url":"https://defillama.com/protocol/hyperliquid"},{"name":"CoinGecko","note":"цена, капитализация, FDV, supply, ATH","url":"https://www.coingecko.com/en/coins/hyperliquid"},{"name":"Nansen","note":"перп-статистика: OI, фандинг, чистый поток, число трейдеров"},{"name":"Coinglass","note":"ликвидации за сутки, история открытого интереса за 30 дней"},{"name":"Hyper Foundation","note":"голосование валидаторов о признании AF сожжённым, декабрь 2025","url":"https://x.com/HyperFND/status/2003684257949188396"}]},"data/reports/lit.json":{"slug":"lit","symbol":"LIT","name":"Lighter","chain":"Ethereum","sector":"Perp DEX / ZK-роллап","address":"0x232ce3bd40fcd6f80f3d55a522d03f25df784ee2","date":"2026-07-29","updated":"2026-07-29T07:00:00Z","verdict":{"stance":"watch","conviction":3,"summary":"Логику по LIT надо разворачивать. **До 27 декабря 2026 разлоков нет вообще**, а 27 декабря не заканчивает навес, а запускает его: 3.2 млн монет в неделю на три года. Чистое окно это сейчас, и оно закрывается, а не открывается. Зона 1.8-1.9$ хорошая, но брать надо в окне и выходить до декабря, а не после."},"thesis":"Про то, почему он ходит не за битком. Это считается.\n\nНоминально в обороте 250 млн монет, минус сожжённые 15.64 млн, минус 110.7 млн в стейкинге. Реально торгуется около **123 млн монет, это 285M$**. При этом каждый день идёт выкуп с рынка и ни одной новой монеты не поступает.\n\nТонкий флоат с постоянным бидом и без навеса ходит сам по себе. Он не обязан следовать за битком, потому что цену двигает не общий риск-аппетит, а дисбаланс в стакане, который легко создать деньгами, не двигающими рынок в целом. Отсюда и обе стороны, которые ты сам заметил: по 3-5% в день вверх и по 10% вниз. Это одно свойство, а не два.\n\nРовно оно исчезает 27 декабря, когда на флоат в 123 млн начнёт приходить 3.2 млн новых монет в неделю.\n\nВторая половина картины хуже. Выручка сложилась с 14M$ в месяц на пике в ноябре 2025 до 1.2M$ темпом в июле, это минус 91%. Выкуп повторяет выручку доллар в доллар, потому что инцентивов протокол не платит. Двигатель настоящий, но бак пустеет ровно к тому моменту, когда включается вестинг.","market":{"price":2.31,"change24h":4.58,"change7d":3.39,"change30d":34.22,"mcap":576829842,"fdv":2307319369,"volume24h":40669710,"circulating":250000000,"totalSupply":984400000,"ath":7.86,"athDate":"2025-12-30","notes":"От пика 7.86$ минус 70%, но от минимума 0.78$ от 31 марта уже плюс 196%. За 30 дней плюс 34%, за 60 дней плюс 67% - при том что биток в это время шёл вниз.\n\nФлоат **25%** это меньше всех в секторе: у HYPE 45.5%, у dYdX 77.1%, у GMX 97.6%, у Aevo 100%. И это самая большая доля под замком при возрасте токена в семь месяцев.\n\nОбъём 40.7M$ в сутки против свободного флоата в 285M$. Оборачиваемость высокая, но абсолютные числа маленькие - на выходе из крупной позиции получишь проскальзывание."},"onchain":{"notes":"Выкуп идёт с 5 января 2026, примерно ежедневно. Выкуплено **16.00 млн монет за 23.0M$** реальных USDC по 17 июля. 10 июля 2026 сожгли **15.64 млн монет** двумя транзакциями, это первое сжигание в истории токена. С 30 июня 2026 политика изменилась: всё выкупленное сжигается, а не паркуется. Максимальное предложение уменьшилось с 1B до 984.4 млн.\n\nВ стейкинге 110.7 млн монет, это 44% флоата. Доходность около 6% годовых, упала с 17.8% на старте в январе, и платят её теперь из экосистемного резерва, а не из выручки.\n\nКонцентрацию по кошелькам подтвердить не удалось: Etherscan отдаёт топ-холдеров только на Pro-тарифе, Nansen вернул 403. Для токена со свободным флоатом в 123 млн это существенная дыра - один крупный держатель здесь двигает цену заметно.","smartMoney":{"notes":"Отток 250M$ в первые сутки после аирдропа 30 декабря 2025 это пользователи забирали свои депозиты с биржи, а не инсайдеры сливали монеты. Инсайдеры физически не могли: их аллокации заперты до 27 декабря 2026."}},"fundamentals":{"what":"Биржа перпов на собственном ZK-роллапе поверх Ethereum. Сделки матчатся вне цепочки для скорости, а в Ethereum кладётся криптографическое доказательство, что каждое исполнение прошло честно. Проверить может кто угодно, доверять оператору не надо - сами называют это verifiable matching.\n\nДля розницы торговля бесплатная. Платят маркетмейкеры и высокочастотный поток, поэтому выручка идёт не с числа пользователей, а с объёма профессионального флоу.","revenue":"Комиссии с торговли идут в казну, оттуда ежедневно выкупается LIT с открытого рынка, и с 30 июня выкупленное сжигается насовсем. Инцентивов протокол не платит, поэтому выкуп повторяет выручку почти доллар в доллар.\n\nУ токена одна подтверждённая утилита кроме этого - стейкинг: одна монета в стейке открывает право занести 10 USDC в пул ликвидности LLP, плюс отмена комиссий за вывод от 100 монет. **Управления у токена нет**, хотя часть сайтов называет LIT governance-активом - в документации протокола прав голоса не описано.","fees30d":2629464,"priceToFees":18,"highlights":["Комиссии за всё время **71.3M$**, торги идут с ноября 2025. За 30 дней 2.63M$ против 3.80M$ за предыдущие 30 дней, это минус 31% месяц к месяцу.","Текущий темп комиссий **32M$ в год**, это минус 55% к трейлингу. Выручка отдельно: пик около 14M$ в месяц в ноябре 2025, сейчас 2-3M$, июль идёт темпом 1.2M$. Минус 91% от пика.","Выкуп в январе был 6.71M$ за месяц, сейчас 2-3M$. Топливо кончается ровно перед клиффом.","FDV к комиссиям **72x**, по капитализации 18x. У HYPE для сравнения 83x и 19.4x - мультипликаторы рядом, но бизнес у HYPE в двадцать раз крупнее.","Robinhood Chain за 30 дней принёс **3073$** комиссий против 2.63M$ у основной сети. Доля 0.12%."],"team":[{"role":"Основатель","name":"Владимир Новаковски","note":"до этого Citadel, в 2022 развернул AI-стартап Lunchclub в Lighter"},{"role":"Регуляторика","name":"комитет CFTC","note":"с 4 июля 2026 в консультативном комитете по инновациям - это не одобрение продукта"},{"role":"Series A, 2024","name":"21M$","note":"Craft Ventures, Haun Ventures, Dragonfly, Robot Ventures"},{"role":"Series B, ноя 2025","name":"68M$ при оценке 1.5B$","note":"Founders Fund, Ribbit Capital, Haun, Robinhood - вход около 1.50$ по FDV"}],"tokenomics":{"allocations":[{"name":"Команда, заперто до 27 дек","pct":0.26},{"name":"Инвесторы, заперто до 27 дек","pct":0.24},{"name":"Аирдроп, выдан","pct":0.25},{"name":"Экосистема, без расписания","pct":0.25}],"emissions":"Аирдроп раздали 30 декабря 2025 по 2.73$, на 682.5M$ - это единственный разлок за всю историю токена. Команда и инвесторы держат ровно половину предложения и заперты до 27 декабря 2026, дальше линейный вестинг три года до конца 2029.\n\nБеспокоит меня больше клиффа другое. Экосистемные **25% вообще без графика**: ни одной недели релиза в 181 неделе прогноза, но при этом из этого ведра платят стейкинг-доходность, сезоны поинтов и 11M$ инцентивов Robinhood. Ведро расходуется, а расписания нет. Датированный клифф можно спланировать, навес без даты нельзя."},"unlocks":[{"date":"2026-12-27","name":"Клифф: команда и инвесторы","pctSupply":0.5,"note":"Заперто 500 млн монет. В этот день ничего не выходит разом - начинается линейный вестинг по 3.2 млн монет в неделю"},{"date":"2027-12-27","name":"Первый год вестинга","pctSupply":0.166,"note":"166 млн монет в год против сжигания в 6-31 млн. Чистое предложение плюс 135.6 млн в год"},{"date":"2029-12-27","name":"Конец вестинга","pctSupply":0.5,"note":"Только к этой дате навес заканчивается полностью"}]},"narrative":{"sentiment":"1 июля 2026 запустился Robinhood Chain, и внутри кошелька Robinhood заработали перпы на движке Lighter, залог в USDG. Lighter выделил 11M$ в LIT на инцентивы. История звучит мощно: биржа с десятками миллионов клиентов раздаёт твой продукт.\n\nТеперь цифры. За 30 дней вся интеграция принесла **3073$** комиссий, это 0.12% от общих. И торговля недоступна резидентам США, Великобритании, Канады, Швейцарии, ОАЭ и Сингапура - то есть вырезан домашний рынок самого Robinhood.\n\nЭто не приговор, интеграции месяц. Но нарратив уже в цене, а выручки от него ещё ноль, и это две разные вещи. Плюс в том, что проверять легко: строка Robinhood Chain видна на DefiLlama каждый день.","catalysts":["Комиссии Robinhood Chain выше 5% от общих к октябрю - тогда бычий сценарий живой","Возврат месячной выручки выше 3M$ - выкуп снова начинает что-то значить","Место основателя в консультативном комитете CFTC как задел на регуляторную ясность в США","27 декабря 2026 - но это катализатор со знаком минус, и он в календаре"]},"risks":[{"severity":"high","title":"Выручка минус 91% от пика","detail":"14M$ в месяц в ноябре 2025 против 1.2M$ темпом в июле 2026. Выкуп повторяет выручку доллар в доллар, потому что других денег у него нет. Двигатель, который держит цену, слабеет каждый месяц."},{"severity":"high","title":"27 декабря разворачивает механику предложения","detail":"Минус 30.6 млн монет в год до клиффа, плюс 135.6 млн после. Это около 11% флоата в месяц против 4.5% у HYPE. Дата известна заранее, поэтому рынок начнёт закладывать её сильно раньше самой даты."},{"severity":"med","title":"Экосистемный резерв без расписания","detail":"25% предложения, ноль опубликованных дат релиза, при этом из него уже платят стейкинг и инцентивы Robinhood. Навес, который нельзя запланировать - как по мне, неприятнее датированного клиффа."},{"severity":"med","title":"Нарратив Robinhood может не конвертироваться","detail":"За 30 дней интеграция дала 3073$ комиссий, 0.12% от общих. И вырезаны США, Великобритания, Канада, Швейцария, ОАЭ, Сингапур. Если к октябрю доля не выйдет на проценты, переоценивать нечего."},{"severity":"med","title":"Тонкий флоат работает в обе стороны","detail":"123 млн монет реального обращения на 285M$. Это даёт 3-5% в день вверх и ровно так же 10% вниз. Проскальзывание на выходе из крупной позиции будет заметным, закладывай объём сразу."},{"severity":"low","title":"Держатели непроверяемы, оценка высокая","detail":"FDV 2.31B$ при комиссиях 32M$ в год это 72x. Концентрацию по кошелькам подтвердить не удалось: Etherscan требует Pro-тариф, Nansen вернул 403. Кто держит свободные 123 млн монет - я не знаю."}],"scenarios":[{"name":"Медвежий","target":"0.72$","prob":0.3,"detail":"Robinhood остаётся пустой строкой, выручка 15M$ в год. Минимум 0.78$ был всего 31 марта, такие уровни тут не экзотика."},{"name":"Базовый","target":"2.16$","prob":0.45,"detail":"Всё как сейчас, выручка 32M$ в год. Боковик до декабря, дальше давление вестинга."},{"name":"Бычий","target":"6.40$","prob":0.25,"detail":"Дистрибуция пошла, выручка 80M$ в год. Требует роста в 2.5 раза от текущего темпа, и единственный источник такого роста это Robinhood."}],"position":{"entry":"**1.8-1.9$** первая покупка на половину объёма. **1.4-1.5$** добор до полного, это уровень входа фондов. Выше 2.6$ не вхожу.","target":"4.5-5$ до декабря при условии, что Robinhood начнёт давать выручку. Половину фиксирую на 3.2$.","invalidation":"Ломает не цена, а перенос или изменение расписания вестинга: если объявят растягивание клиффа, вся конструкция со сроком годности рассыпается и считать надо заново. Ниже 1.35$ по недельному закрытию выхожу и не усредняюсь. Отдельно: выручка ниже 1M$ в месяц два месяца подряд означает, что окно закрылось раньше срока.","size":"3-4% депозита, не больше - флоат тонкий, проскальзывание на выходе закладывай сразу. Вход 1.85$, стоп 1.42$, риск 0.43$ на монету или 23%. На позицию 5000$ теряешь 1150$.","horizon":"До 1 декабря 2026","notes":"**По 2.31$ не беру.** До твоей зоны минус 18-22%, и торопиться некуда: до декабря навеса нет, время работает не против нас.\n\nЗона 1.8-1.9$ нравится по трём причинам сразу: это близко к ориентиру входа фондов около 1.50$, это с запасом выше мартовского минимума 0.78$, и это уровень, где выкуп на текущей выручке забирает заметную долю дневного объёма.\n\nГлавное отличие от обычного плана: **до 1 декабря выйти или сократить до трети независимо от цены**. Это сделка со сроком годности, а не холд.\n\nСмотреть еженедельно надо одну строку - комиссии Robinhood Chain на DefiLlama. Сейчас 0.12% от общих. Выйдет к октябрю на 5% и выше - бычий сценарий живой. Останется в десятых долях процента - выходим не дожидаясь декабря."},"sources":[{"name":"DefiLlama","note":"комиссии по дням и в разбивке по сетям, включая строку Robinhood Chain","url":"https://defillama.com/protocol/lighter"},{"name":"CoinGecko","note":"цена, капитализация, FDV, supply, ATH и минимум","url":"https://www.coingecko.com/en/coins/lighter"},{"name":"Tokenomist через unlocks.app","note":"аллокации, расписание вестинга, суммы выкупа и сжигания","url":"https://insights.unlocks.app/lighter-lit-tokenomics-robinhood-hype-a-real-burn-and-the-december-2026-cliff-2/"},{"name":"Fortune","note":"раунды финансирования и оценка Series B","url":"https://fortune.com/2025/11/11/lighter-fundraise-founders-fund-ribbit-capital-haun-ventures-robinhood-vladimir-novakovski/"},{"name":"Lighter Docs","note":"утилита токена, стейкинг, отсутствие прав управления","url":"https://docs.lighter.xyz/about-lighter/lit-utility"}]}};
+window.__BUNDLE__ = {"data/index.json":{"updated":"2026-07-29","reports":[{"slug":"lit","symbol":"LIT","name":"Lighter","chain":"Ethereum","date":"2026-07-29","stance":"watch","price":2.31,"change24h":4.58,"mcap":576829842,"summary":"Логику надо разворачивать: до 27 декабря разлоков нет вообще, а клифф их запускает, а не заканчивает. Чистое окно сейчас. Зона 1.8-1.9$ хорошая, но выходить до декабря."},{"slug":"hype","symbol":"HYPE","name":"Hyperliquid","chain":"Hyperliquid L1","date":"2026-07-28","stance":"bearish","price":55.37,"change24h":-1.97,"mcap":12319739020,"summary":"HYPE как бизнес очень нравится, а что происходит с предложением - вообще не нравится. Сжигают 0.84 млн монет в месяц против разлока в 9.92 млн. По 55$ не беру, жду 38-42$."}]},"data/reports/hype.json":{"slug":"hype","symbol":"HYPE","name":"Hyperliquid","chain":"Hyperliquid L1","sector":"Perp DEX / L1","date":"2026-07-28","updated":"2026-07-28T22:48:00Z","verdict":{"stance":"bearish","conviction":4,"summary":"HYPE как бизнес очень нравится. Что происходит с предложением - вообще не нравится. Выкуп настоящий, 99% комиссий автоматом идут на покупку монеты, и она формально сожжена голосованием валидаторов. Но сжигают **0.84 млн в месяц**, а разлок выдаёт **9.92 млн**. Один к 11.8. Даже если ничего не изменится, через полгода цена **40$ вместо 55$** просто от размытия. По 55$ не беру."},"thesis":"Переписал разбор после того, как посчитал сжигание и разлок в монетах, а не в долларах. В долларах выкуп звучит внушительно, в монетах он перекрывает 8.5% месячного разлока.\n\nВ 2025 нарратив про дефляционный токен был честным. Разлоков не было, годовой клифф не прошёл, комиссии шли темпом 145M$ в месяц. Всё сменилось в январе 2026: пошли ежемесячные транши по 9.92 млн, а комиссии к тому моменту уже сложились вдвое. Два фактора ударили одновременно, а формулировка так и осталась старая.\n\nОтдельно неприятная механика: выкуп фиксирован в долларах, а не в монетах. При 20$ те же деньги забирали с рынка около 3 млн монет в месяц, при 55$ забирают 0.84 млн. Чем выше цена, тем слабее то, что её держит.\n\nВсё упирается в одну переменную - месячные комиссии. Тезис ломается, если они уйдут выше 100M$ два месяца подряд.\n\nОчень хочется увидеть вынос в 38-42$ и разворот оттуда. Будет такая скидка - беру.","market":{"price":55.37,"change24h":-1.97,"change7d":-8.32,"change30d":-8.92,"mcap":12319739020,"fdv":52907892387,"volume24h":467557435,"circulating":222445714,"totalSupply":955307079,"ath":76.7,"athDate":"2026-06-16","notes":"MC/FDV **0.23**. Считать этот актив надо по FDV, потому что разлоки месяц за месяцем переводят FDV в капитализацию. FDV к текущему темпу выручки это **83x**, по капитализации в обороте 19.4x.\n\nTotal supply 955.3 млн вместо 1B - разница это монеты Assistance Fund, признанные сожжёнными."},"onchain":{"notes":"Assistance Fund это системный адрес `0xfefefefefefefefefefefefefefefefefefefefe`, встроенный в уровень исполнения L1. Комиссии конвертируются в HYPE автоматически, механизма вывода не предусмотрено. В декабре 2025 валидаторы проголосовали признать содержимое фонда сожжённым: 85% за, 7% против, 8% воздержались. Баланс на июль 2026 около 45.65 млн, сходится с разницей между максимальным предложением и текущим total supply.\n\nРаспределение по держателям проверить нечем: HYPE нативный актив своего L1, стандартные ончейн-источники его не индексируют. Это дыра в анализе, и я о ней знаю.","smartMoney":{"notes":"На перп-рынке Hyperliquid за сутки: 13718 трейдеров, объём 533M$, покупки 245.8M$ против продаж 287.2M$. Чистый отток **41.4M$**."}},"fundamentals":{"what":"Биржа перпов на своём L1. Книга заявок тут и есть база данных сети: каждая заявка, каждое исполнение, каждая ликвидация лежат в блоке. Нет доверенного сервера, который сводит сделки у себя, а в сеть кладёт результат.\n\nАналогия ломается в одном месте. Валидаторов немного, и скорость держится ровно на этом. Тут первична скорость, а децентрализация подогнана под неё.\n\nПоверх биржи работает HyperEVM с TVL 6.35B$, но заметного своего потока комиссий он пока не даёт. Держу как опцион, а не как выручку.","revenue":"Комиссии с торговли. Всё. Дальше 99% автоматом уходит на покупку HYPE с открытого рынка, 1% вкладчикам HLP.\n\nЗа сутки: перпы **97.0%** (2.15M$), спот 2.3% (51.5к$), HLP 0.7% (15.2к$). Диверсификации нет вообще, падает объём перпов - падает всё.","tvl":6345989410,"fees30d":52561541,"priceToFees":19.4,"highlights":["Комиссии за всё время **1.449B$**, за 12 месяцев **1.035B$**. Текущий темп 634M$ в год, это минус 39% к трейлингу.","От пика падение на **64%**: август 2025 дал 145M$ за месяц, июль 2026 идёт темпом 52.8M$.","Выкуп падает синхронно с комиссиями: 316.8M$ за 3 квартал 2025, 255.1M$ за 4 квартал, 192.3M$ за 1 квартал 2026.","Доля среди perp DEX **70%**, глобальная доля выросла с 4% до **6.2%** за полгода. Это очень нравится. Проблема не в конкурентах, а в том что остыл весь сектор.","Пиковый день по комиссиям: 10 октября 2025, 10.74M$ за сутки."],"team":[{"role":"Сооснователь","name":"Джефф Ян","note":"Гарвард, затем Hudson River Trading"},{"role":"Сооснователь","name":"iliensinc","note":"псевдоним, однокурсник по Гарварду"},{"role":"Команда","name":"около 11 человек","note":"Hudson River, Citadel, крупный тех"},{"role":"Финансирование","name":"внешних инвесторов нет","note":"отказ от раунда по оценке 1B$, чтобы не раздавать аллокации"}],"tokenomics":{"allocations":[{"name":"В обороте","pct":0.2224},{"name":"Core contributors, в вестинге","pct":0.238},{"name":"Прочее нераспределённое","pct":0.4949},{"name":"Сожжено фондом","pct":0.0447}],"emissions":"Core contributors получили около 23.8% предложения, это примерно 238 млн HYPE. Годовой клифф, дальше линейный вестинг 24 месяца до 2027. С января 2026 транши идут ежемесячно, шестого числа.\n\nИнвесторских аллокаций нет, потому что инвесторов нет. Весь навес это команда - и это заметно лучше, чем венчурные монеты по цене в двадцать раз ниже рынка."},"unlocks":[{"date":"2026-08-06","name":"Core contributors","pctSupply":0.0099,"amountUsd":549000000,"note":"9.92 млн монет, как и каждый месяц"},{"date":"2026-09-06","name":"Core contributors","pctSupply":0.0099,"amountUsd":549000000,"note":"9.92 млн монет"},{"date":"2027-01-01","name":"Итого впереди","pctSupply":0.15,"amountUsd":8260000000,"note":"около 150 млн монет до конца вестинга, это 67% к текущему обороту"}],"charts":[{"type":"area","title":"КОМИССИИ ПО МЕСЯЦАМ","unit":"usd","series":[{"label":"янв 25","value":52165603},{"label":"фев 25","value":46585009},{"label":"мар 25","value":40929764},{"label":"апр 25","value":44237097},{"label":"май 25","value":72978325},{"label":"июн 25","value":63138126},{"label":"июл 25","value":96410806},{"label":"авг 25","value":144971672},{"label":"сен 25","value":115275517},{"label":"окт 25","value":124841722},{"label":"ноя 25","value":101384085},{"label":"дек 25","value":68749428},{"label":"янв 26","value":77285196},{"label":"фев 26","value":70699262},{"label":"мар 26","value":69487614},{"label":"апр 26","value":58673396},{"label":"май 26","value":62183013},{"label":"июн 26","value":80977153},{"label":"июл 26","value":52800000}],"note":"Пик 145M$ в августе 2025, сейчас темп 52.8M$. Минус 64%. Июль показан темпом: в месяце ещё не все дни."},{"type":"compare","title":"ЗА ОДИН МЕСЯЦ: СЖИГАНИЕ ПРОТИВ РАЗЛОКА","unit":"coins","series":[{"label":"Сжигание","value":840000,"display":"0.84 млн","tone":"pos"},{"label":"Разлок","value":9920000,"display":"9.92 млн","tone":"neg"}],"ratio":"Чистое давление плюс 9.08 млн монет в месяц, это 500M$. Выкуп перекрывает 8.5% разлока.","note":"Считать надо в монетах: в долларах выкуп звучит внушительнее, чем работает."},{"type":"bars","title":"ВЫКУП ПО КВАРТАЛАМ","unit":"usd","emphasis":3,"series":[{"label":"3кв 2025","value":316800000},{"label":"4кв 2025","value":255100000},{"label":"1кв 2026","value":192300000},{"label":"июл 2026, темпом","value":46000000}],"note":"Выкуп это функция от комиссий, других источников у него нет."}]},"derivatives":{"oi":2321243756,"oiChange24h":-1.6,"fundingRate":0.00125,"fundingPeriod":"1ч, 10.95% годовых","liq24h":16728822,"liqLongShare":0.9916,"notes":"OI по всем биржам за месяц сжался с 2.70B$ до 2.32B$, это минус 14%. Внутри Hyperliquid 1.3B$.\n\nЛиквидаций за сутки на 16.7M$, из них **99.2% лонги**. Плечо методично вычищают с длинной стороны. Фандинг при этом положительный и умеренный, около 11% годовых."},"narrative":{"sentiment":"Нарратив про переток деривативов из CEX в ончейн живой, и Hyperliquid его главный бенефициар. Но он уже отыгран ростом до 76.70$ и теперь требует подтверждения цифрами, а цифры за год слабее.\n\nСпотовые ETF в США запущены и на одном из заходов собрали 111M$ притока. С 9 июля притоков нет, идут оттоки, единственное исключение 15 июля. Инструмент есть, спроса через него нет.\n\nХейс называл 150$ к августу 2026. До августа неделя, цена 55$. Разбирать стоит не цифру, а условие: для 150$ нужен мультипликатор около 70x к текущему темпу выручки, столько платили только на пике эйфории.","catalysts":["Возврат месячных комиссий выше 100M$ два месяца подряд - единственное, что реально ломает медвежью арифметику","HyperEVM как второй источник комиссий, пока это опцион, а не выручка","HIP-3, рынки от сторонних деплоеров, вклад в общие комиссии подтвердить отдельной цифрой не удалось","Окончание вестинга core contributors в 2027 - снятие навеса, но ждать долго"]},"risks":[{"severity":"high","title":"Разлок перевешивает сжигание в 12 раз","detail":"9.92 млн монет в месяц против 0.84 млн сожжённых. Чистое давление 9.08 млн монет, это 500M$ по текущей цене, и так до 2027 года. Чтобы механика развернулась, комиссии должны вырасти примерно в десять раз."},{"severity":"high","title":"Выручка сложилась почти втрое","detail":"145M$ в августе 2025 против 52.8M$ темпом в июле 2026, минус 64% от пика. Выкуп привязан к комиссиям жёстко и падает синхронно, без задержки и без возможности вмешаться управленчески."},{"severity":"med","title":"Один продукт","detail":"97% комиссий с перпов. Спад волатильности бьёт по Hyperliquid сильнее, чем по диверсифицированным сетям. HyperEVM даёт TVL, но не поток комиссий."},{"severity":"med","title":"Оценка по FDV","detail":"FDV 52.63B$ против текущего темпа выручки 634M$ это 83x. По капитализации в обороте 19.3x выглядит приличнее, но разлоки как раз и переводят FDV в капитализацию."},{"severity":"med","title":"Конкуренция за долю","detail":"Aster в сентябре 2025 на короткое время забрал больше половины рынка perp DEX. Лидерство устояло, но эпизод показал, что доля отбирается инцентивами быстрее, чем строится продуктом."},{"severity":"low","title":"Регуляторика и непрозрачность держателей","detail":"Биржа бессрочных фьючерсов с реальными объёмами и без KYC-периметра - очевидная мишень. Плюс концентрацию у топ-адресов проверить нечем: нативный актив собственного L1 не индексируется стандартными источниками."}],"scenarios":[{"name":"Медвежий","target":"19$","prob":0.25,"detail":"Комиссии 30M$ в месяц. Капитализация 5.4B$ при обороте 282 млн монет.","value":19},{"name":"Базовый, всё как сейчас","target":"40$","prob":0.45,"detail":"Комиссии 50M$, мультипликатор не меняется. Минус 27% получается из одного только разлока.","value":40},{"name":"Бычий","target":"94$","prob":0.22,"detail":"Комиссии 100M$ в месяц, удвоение от текущих. Такие месяцы были, июнь 2026 дал 81M$.","value":94},{"name":"Мечта","target":"135$","prob":0.08,"detail":"Возврат к пиковым 145M$ в месяц. Требует волатильности, которой сейчас нет.","value":135}],"position":{"entry":"**38-42$** первая покупка на треть объёма, цена сходится к базовому сценарию. **30-34$** добор до полного объёма. Выше 48$ не вхожу.","target":"94$ при отработке, промежуточная фиксация половины на 76$ - уровень исторического максимума.","invalidation":"Месячные комиссии выше 100M$ два месяца подряд ломают медвежий тезис: сжигание выходит на 1.8 млн монет и разрыв сокращается вдвое. Ниже 31$ по недельному закрытию выхожу и не усредняюсь.","size":"Не более 3-5% депозита, пока не пройдут два разлока подряд без обвала. Вход 40$, стоп 31$, риск 9$ на монету или 22.5%. На позицию 5000$ теряешь 1125$.","horizon":"2-4 квартала","notes":"**Здесь не покупаю.** Позиции нет, и открывать её по 55$ не буду. При базовом сценарии, где вообще ничего не меняется, честная цена 40$. Покупать на 27% выше своей же базы это не сделка, а надежда.\n\nОчень хочется увидеть вынос в 38-42$ и разворот оттуда. Будет такая скидка - беру треть объёма.\n\nЧего подтвердить не удалось: точный баланс Assistance Fund на цепочке за июль (цифра из вторичных источников, сходится с разницей supply, но прямого запроса к адресу не делал), точный поток в фонд после билдеров и HIP-3 деплоеров, распределение по держателям."},"sources":[{"name":"DefiLlama","note":"комиссии по дням за 578 дней, TVL, разбивка перпы/спот/HLP","url":"https://defillama.com/protocol/hyperliquid"},{"name":"CoinGecko","note":"цена, капитализация, FDV, supply, ATH","url":"https://www.coingecko.com/en/coins/hyperliquid"},{"name":"Nansen","note":"перп-статистика: OI, фандинг, чистый поток, число трейдеров"},{"name":"Coinglass","note":"ликвидации за сутки, история открытого интереса за 30 дней"},{"name":"Hyper Foundation","note":"голосование валидаторов о признании AF сожжённым, декабрь 2025","url":"https://x.com/HyperFND/status/2003684257949188396"}]},"data/reports/lit.json":{"slug":"lit","symbol":"LIT","name":"Lighter","chain":"Ethereum","sector":"Perp DEX / ZK-роллап","address":"0x232ce3bd40fcd6f80f3d55a522d03f25df784ee2","date":"2026-07-29","updated":"2026-07-29T07:00:00Z","verdict":{"stance":"watch","conviction":3,"summary":"Логику по LIT надо разворачивать. **До 27 декабря 2026 разлоков нет вообще**, а 27 декабря не заканчивает навес, а запускает его: 3.2 млн монет в неделю на три года. Чистое окно это сейчас, и оно закрывается, а не открывается. Зона 1.8-1.9$ хорошая, но брать надо в окне и выходить до декабря, а не после."},"thesis":"Про то, почему он ходит не за битком. Это считается.\n\nНоминально в обороте 250 млн монет, минус сожжённые 15.64 млн, минус 110.7 млн в стейкинге. Реально торгуется около **123 млн монет, это 285M$**. При этом каждый день идёт выкуп с рынка и ни одной новой монеты не поступает.\n\nТонкий флоат с постоянным бидом и без навеса ходит сам по себе. Он не обязан следовать за битком, потому что цену двигает не общий риск-аппетит, а дисбаланс в стакане, который легко создать деньгами, не двигающими рынок в целом. Отсюда и обе стороны, которые ты сам заметил: по 3-5% в день вверх и по 10% вниз. Это одно свойство, а не два.\n\nРовно оно исчезает 27 декабря, когда на флоат в 123 млн начнёт приходить 3.2 млн новых монет в неделю.\n\nВторая половина картины хуже. Выручка сложилась с 14M$ в месяц на пике в ноябре 2025 до 1.2M$ темпом в июле, это минус 91%. Выкуп повторяет выручку доллар в доллар, потому что инцентивов протокол не платит. Двигатель настоящий, но бак пустеет ровно к тому моменту, когда включается вестинг.","market":{"price":2.31,"change24h":4.58,"change7d":3.39,"change30d":34.22,"mcap":576829842,"fdv":2307319369,"volume24h":40669710,"circulating":250000000,"totalSupply":984400000,"ath":7.86,"athDate":"2025-12-30","notes":"От пика 7.86$ минус 70%, но от минимума 0.78$ от 31 марта уже плюс 196%. За 30 дней плюс 34%, за 60 дней плюс 67% - при том что биток в это время шёл вниз.\n\nФлоат **25%** это меньше всех в секторе: у HYPE 45.5%, у dYdX 77.1%, у GMX 97.6%, у Aevo 100%. И это самая большая доля под замком при возрасте токена в семь месяцев.\n\nОбъём 40.7M$ в сутки против свободного флоата в 285M$. Оборачиваемость высокая, но абсолютные числа маленькие - на выходе из крупной позиции получишь проскальзывание."},"onchain":{"notes":"Выкуп идёт с 5 января 2026, примерно ежедневно. Выкуплено **16.00 млн монет за 23.0M$** реальных USDC по 17 июля. 10 июля 2026 сожгли **15.64 млн монет** двумя транзакциями, это первое сжигание в истории токена. С 30 июня 2026 политика изменилась: всё выкупленное сжигается, а не паркуется. Максимальное предложение уменьшилось с 1B до 984.4 млн.\n\nВ стейкинге 110.7 млн монет, это 44% флоата. Доходность около 6% годовых, упала с 17.8% на старте в январе, и платят её теперь из экосистемного резерва, а не из выручки.\n\nКонцентрацию по кошелькам подтвердить не удалось: Etherscan отдаёт топ-холдеров только на Pro-тарифе, Nansen вернул 403. Для токена со свободным флоатом в 123 млн это существенная дыра - один крупный держатель здесь двигает цену заметно.","smartMoney":{"notes":"Отток 250M$ в первые сутки после аирдропа 30 декабря 2025 это пользователи забирали свои депозиты с биржи, а не инсайдеры сливали монеты. Инсайдеры физически не могли: их аллокации заперты до 27 декабря 2026."},"charts":[{"type":"bars","title":"ИЗ ЧЕГО СКЛАДЫВАЕТСЯ РЕАЛЬНЫЙ ФЛОАТ","unit":"coins","emphasis":2,"series":[{"label":"Номинальный оборот","value":250000000,"display":"250 млн"},{"label":"После сжигания","value":234400000,"display":"234.4 млн"},{"label":"Свободно торгуется","value":123300000,"display":"123.3 млн = 285M$"}],"note":"Тонкий флоат с ежедневным выкупом и без навеса ходит сам по себе. Отсюда и 3-5% в день, и 10% вниз."}]},"fundamentals":{"what":"Биржа перпов на собственном ZK-роллапе поверх Ethereum. Сделки матчатся вне цепочки для скорости, а в Ethereum кладётся криптографическое доказательство, что каждое исполнение прошло честно. Проверить может кто угодно, доверять оператору не надо - сами называют это verifiable matching.\n\nДля розницы торговля бесплатная. Платят маркетмейкеры и высокочастотный поток, поэтому выручка идёт не с числа пользователей, а с объёма профессионального флоу.","revenue":"Комиссии с торговли идут в казну, оттуда ежедневно выкупается LIT с открытого рынка, и с 30 июня выкупленное сжигается насовсем. Инцентивов протокол не платит, поэтому выкуп повторяет выручку почти доллар в доллар.\n\nУ токена одна подтверждённая утилита кроме этого - стейкинг: одна монета в стейке открывает право занести 10 USDC в пул ликвидности LLP, плюс отмена комиссий за вывод от 100 монет. **Управления у токена нет**, хотя часть сайтов называет LIT governance-активом - в документации протокола прав голоса не описано.","fees30d":2629464,"priceToFees":18,"highlights":["Комиссии за всё время **71.3M$**, торги идут с ноября 2025. За 30 дней 2.63M$ против 3.80M$ за предыдущие 30 дней, это минус 31% месяц к месяцу.","Текущий темп комиссий **32M$ в год**, это минус 55% к трейлингу. Выручка отдельно: пик около 14M$ в месяц в ноябре 2025, сейчас 2-3M$, июль идёт темпом 1.2M$. Минус 91% от пика.","Выкуп в январе был 6.71M$ за месяц, сейчас 2-3M$. Топливо кончается ровно перед клиффом.","FDV к комиссиям **72x**, по капитализации 18x. У HYPE для сравнения 83x и 19.4x - мультипликаторы рядом, но бизнес у HYPE в двадцать раз крупнее.","Robinhood Chain за 30 дней принёс **3073$** комиссий против 2.63M$ у основной сети. Доля 0.12%."],"team":[{"role":"Основатель","name":"Владимир Новаковски","note":"до этого Citadel, в 2022 развернул AI-стартап Lunchclub в Lighter"},{"role":"Регуляторика","name":"комитет CFTC","note":"с 4 июля 2026 в консультативном комитете по инновациям - это не одобрение продукта"},{"role":"Series A, 2024","name":"21M$","note":"Craft Ventures, Haun Ventures, Dragonfly, Robot Ventures"},{"role":"Series B, ноя 2025","name":"68M$ при оценке 1.5B$","note":"Founders Fund, Ribbit Capital, Haun, Robinhood - вход около 1.50$ по FDV"}],"tokenomics":{"allocations":[{"name":"Команда, заперто до 27 дек","pct":0.26},{"name":"Инвесторы, заперто до 27 дек","pct":0.24},{"name":"Аирдроп, выдан","pct":0.25},{"name":"Экосистема, без расписания","pct":0.25}],"emissions":"Аирдроп раздали 30 декабря 2025 по 2.73$, на 682.5M$ - это единственный разлок за всю историю токена. Команда и инвесторы держат ровно половину предложения и заперты до 27 декабря 2026, дальше линейный вестинг три года до конца 2029.\n\nБеспокоит меня больше клиффа другое. Экосистемные **25% вообще без графика**: ни одной недели релиза в 181 неделе прогноза, но при этом из этого ведра платят стейкинг-доходность, сезоны поинтов и 11M$ инцентивов Robinhood. Ведро расходуется, а расписания нет. Датированный клифф можно спланировать, навес без даты нельзя."},"unlocks":[{"date":"2026-12-27","name":"Клифф: команда и инвесторы","pctSupply":0.5,"note":"Заперто 500 млн монет. В этот день ничего не выходит разом - начинается линейный вестинг по 3.2 млн монет в неделю"},{"date":"2027-12-27","name":"Первый год вестинга","pctSupply":0.166,"note":"166 млн монет в год против сжигания в 6-31 млн. Чистое предложение плюс 135.6 млн в год"},{"date":"2029-12-27","name":"Конец вестинга","pctSupply":0.5,"note":"Только к этой дате навес заканчивается полностью"}],"charts":[{"type":"compare","title":"ЧИСТОЕ ИЗМЕНЕНИЕ ПРЕДЛОЖЕНИЯ ЗА ГОД","unit":"coins","series":[{"label":"Сейчас, до клиффа","value":30600000,"display":"-30.6 млн","tone":"pos"},{"label":"После 27 декабря","value":135600000,"display":"+135.6 млн","tone":"neg"}],"ratio":"Механика разворачивается в один день. Дата известна заранее.","note":"Ждать после анлоков значит ждать до конца 2029: клифф запускает вестинг, а не заканчивает его."},{"type":"bars","title":"ВЫКУП ПО МЕСЯЦАМ","unit":"usd","emphasis":2,"series":[{"label":"янв 2026","value":6710000},{"label":"середина года","value":2500000},{"label":"июл 2026, темпом","value":1200000}],"note":"Двигатель настоящий, бак пустеет. И заканчивается ровно к моменту включения вестинга."}]},"narrative":{"sentiment":"1 июля 2026 запустился Robinhood Chain, и внутри кошелька Robinhood заработали перпы на движке Lighter, залог в USDG. Lighter выделил 11M$ в LIT на инцентивы. История звучит мощно: биржа с десятками миллионов клиентов раздаёт твой продукт.\n\nТеперь цифры. За 30 дней вся интеграция принесла **3073$** комиссий, это 0.12% от общих. И торговля недоступна резидентам США, Великобритании, Канады, Швейцарии, ОАЭ и Сингапура - то есть вырезан домашний рынок самого Robinhood.\n\nЭто не приговор, интеграции месяц. Но нарратив уже в цене, а выручки от него ещё ноль, и это две разные вещи. Плюс в том, что проверять легко: строка Robinhood Chain видна на DefiLlama каждый день.","catalysts":["Комиссии Robinhood Chain выше 5% от общих к октябрю - тогда бычий сценарий живой","Возврат месячной выручки выше 3M$ - выкуп снова начинает что-то значить","Место основателя в консультативном комитете CFTC как задел на регуляторную ясность в США","27 декабря 2026 - но это катализатор со знаком минус, и он в календаре"],"charts":[{"type":"bars","title":"КОМИССИИ ЗА 30 ДНЕЙ: ОТКУДА ОНИ НА САМОМ ДЕЛЕ","unit":"usd","emphasis":0,"series":[{"label":"Основная сеть","value":2629464},{"label":"Robinhood Chain","value":3073,"display":"3073$ = 0.12%"}],"note":"Заявлено: дистрибуция через Robinhood. На деле за 30 дней интеграция принесла 3073$. И вырезаны США, Великобритания, Канада, Швейцария, ОАЭ, Сингапур."}]},"risks":[{"severity":"high","title":"Выручка минус 91% от пика","detail":"14M$ в месяц в ноябре 2025 против 1.2M$ темпом в июле 2026. Выкуп повторяет выручку доллар в доллар, потому что других денег у него нет. Двигатель, который держит цену, слабеет каждый месяц."},{"severity":"high","title":"27 декабря разворачивает механику предложения","detail":"Минус 30.6 млн монет в год до клиффа, плюс 135.6 млн после. Это около 11% флоата в месяц против 4.5% у HYPE. Дата известна заранее, поэтому рынок начнёт закладывать её сильно раньше самой даты."},{"severity":"med","title":"Экосистемный резерв без расписания","detail":"25% предложения, ноль опубликованных дат релиза, при этом из него уже платят стейкинг и инцентивы Robinhood. Навес, который нельзя запланировать - как по мне, неприятнее датированного клиффа."},{"severity":"med","title":"Нарратив Robinhood может не конвертироваться","detail":"За 30 дней интеграция дала 3073$ комиссий, 0.12% от общих. И вырезаны США, Великобритания, Канада, Швейцария, ОАЭ, Сингапур. Если к октябрю доля не выйдет на проценты, переоценивать нечего."},{"severity":"med","title":"Тонкий флоат работает в обе стороны","detail":"123 млн монет реального обращения на 285M$. Это даёт 3-5% в день вверх и ровно так же 10% вниз. Проскальзывание на выходе из крупной позиции будет заметным, закладывай объём сразу."},{"severity":"low","title":"Держатели непроверяемы, оценка высокая","detail":"FDV 2.31B$ при комиссиях 32M$ в год это 72x. Концентрацию по кошелькам подтвердить не удалось: Etherscan требует Pro-тариф, Nansen вернул 403. Кто держит свободные 123 млн монет - я не знаю."}],"scenarios":[{"name":"Медвежий","target":"0.72$","prob":0.3,"detail":"Robinhood остаётся пустой строкой, выручка 15M$ в год. Минимум 0.78$ был всего 31 марта, такие уровни тут не экзотика.","value":0.72},{"name":"Базовый","target":"2.16$","prob":0.45,"detail":"Всё как сейчас, выручка 32M$ в год. Боковик до декабря, дальше давление вестинга.","value":2.16},{"name":"Бычий","target":"6.40$","prob":0.25,"detail":"Дистрибуция пошла, выручка 80M$ в год. Требует роста в 2.5 раза от текущего темпа, и единственный источник такого роста это Robinhood.","value":6.4}],"position":{"entry":"**1.8-1.9$** первая покупка на половину объёма. **1.4-1.5$** добор до полного, это уровень входа фондов. Выше 2.6$ не вхожу.","target":"4.5-5$ до декабря при условии, что Robinhood начнёт давать выручку. Половину фиксирую на 3.2$.","invalidation":"Ломает не цена, а перенос или изменение расписания вестинга: если объявят растягивание клиффа, вся конструкция со сроком годности рассыпается и считать надо заново. Ниже 1.35$ по недельному закрытию выхожу и не усредняюсь. Отдельно: выручка ниже 1M$ в месяц два месяца подряд означает, что окно закрылось раньше срока.","size":"3-4% депозита, не больше - флоат тонкий, проскальзывание на выходе закладывай сразу. Вход 1.85$, стоп 1.42$, риск 0.43$ на монету или 23%. На позицию 5000$ теряешь 1150$.","horizon":"До 1 декабря 2026","notes":"**По 2.31$ не беру.** До твоей зоны минус 18-22%, и торопиться некуда: до декабря навеса нет, время работает не против нас.\n\nЗона 1.8-1.9$ нравится по трём причинам сразу: это близко к ориентиру входа фондов около 1.50$, это с запасом выше мартовского минимума 0.78$, и это уровень, где выкуп на текущей выручке забирает заметную долю дневного объёма.\n\nГлавное отличие от обычного плана: **до 1 декабря выйти или сократить до трети независимо от цены**. Это сделка со сроком годности, а не холд.\n\nСмотреть еженедельно надо одну строку - комиссии Robinhood Chain на DefiLlama. Сейчас 0.12% от общих. Выйдет к октябрю на 5% и выше - бычий сценарий живой. Останется в десятых долях процента - выходим не дожидаясь декабря."},"sources":[{"name":"DefiLlama","note":"комиссии по дням и в разбивке по сетям, включая строку Robinhood Chain","url":"https://defillama.com/protocol/lighter"},{"name":"CoinGecko","note":"цена, капитализация, FDV, supply, ATH и минимум","url":"https://www.coingecko.com/en/coins/lighter"},{"name":"Tokenomist через unlocks.app","note":"аллокации, расписание вестинга, суммы выкупа и сжигания","url":"https://insights.unlocks.app/lighter-lit-tokenomics-robinhood-hype-a-real-burn-and-the-december-2026-cliff-2/"},{"name":"Fortune","note":"раунды финансирования и оценка Series B","url":"https://fortune.com/2025/11/11/lighter-fundraise-founders-fund-ribbit-capital-haun-ventures-robinhood-vladimir-novakovski/"},{"name":"Lighter Docs","note":"утилита токена, стейкинг, отсутствие прав управления","url":"https://docs.lighter.xyz/about-lighter/lit-utility"}]}};
 </script>
 
 <script>
@@ -595,6 +921,9 @@ function safeUrl(u) {
   return parsed.protocol === 'http:' || parsed.protocol === 'https:' ? parsed.href : null;
 }
 
+/** True when the reader asked the OS to cut down on motion. */
+const reduced = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
+
 /** Escape for safe interpolation into innerHTML. */
 function esc(s) {
   if (s == null) return '';
@@ -643,17 +972,389 @@ async function loadJSON(url) {
   return res.json();
 }
 
+/* SVG charts. No dependencies, no canvas — plain SVG so text stays selectable
+ * and everything scales. Each chart mounts into a placeholder div that the
+ * report renderer already put in the DOM.
+ *
+ * Colour follows the job, not the mood:
+ *   trend over time      -> one hue (the accent), area fill
+ *   magnitude comparison -> one hue, emphasis on the bar that matters
+ *   polarity             -> semantic green/red (supply removed vs added)
+ *   part-to-whole        -> the categorical set, validated for CVD
+ * Every chart also emits a <table> for screen readers and for anyone who wants
+ * the numbers rather than the shape.
+ */
+
+
+const NS = 'http://www.w3.org/2000/svg';
+
+/** Validated categorical set — see data/SCHEMA.md for how it was checked. */
+const CATEGORICAL = ['#7c83ff', '#00a3b4', '#e0704f', '#b06ae0'];
+
+/** Only a literal colour may reach a style attribute. */
+const safeColor = c => (/^#[0-9a-f]{3,8}$/i.test(String(c || '').trim()) ? c.trim() : null);
+
+const fmt = (v, unit) => {
+  if (unit === 'usd') return usd(v);
+  if (unit === 'coins') return `${num(v)} монет`;
+  if (unit === 'pct') return pct(v);
+  return num(v);
+};
+
+function el(tag, attrs = {}, parent) {
+  const n = document.createElementNS(NS, tag);
+  for (const [k, v] of Object.entries(attrs)) if (v != null) n.setAttribute(k, v);
+  if (parent) parent.appendChild(n);
+  return n;
+}
+
+/** Numbers-behind-the-picture, always present. */
+function dataTable(spec) {
+  const rows = spec.series
+    .map(s => `<tr><th scope="row">${esc(s.label)}</th><td>${esc(s.display || fmt(s.value, spec.unit))}</td></tr>`)
+    .join('');
+  return `<details class="chart-data">
+    <summary>Показать числа</summary>
+    <table><tbody>${rows}</tbody></table>
+  </details>`;
+}
+
+function shell(host, spec) {
+  host.innerHTML = `
+    ${spec.title ? `<div class="chart-title">${esc(spec.title)}</div>` : ''}
+    <div class="chart-plot"></div>
+    ${spec.note ? `<div class="chart-note">${esc(spec.note)}</div>` : ''}
+    ${dataTable(spec)}`;
+  return host.querySelector('.chart-plot');
+}
+
+/* ── trend over time ─────────────────────────────────────────────
+   One series, so no legend: the title names it. Line + soft fill,
+   crosshair and tooltip on hover, last point always marked.        */
+
+function areaChart(host, spec) {
+  const plot = shell(host, spec);
+  const pts = spec.series;
+  if (pts.length < 2) return;
+
+  const W = 720, H = 210, padL = 8, padR = 8, padT = 16, padB = 26;
+  const max = Math.max(...pts.map(p => p.value));
+  const min = Math.min(0, ...pts.map(p => p.value));
+  const x = i => padL + (i / (pts.length - 1)) * (W - padL - padR);
+  const y = v => padT + (1 - (v - min) / (max - min || 1)) * (H - padT - padB);
+
+  const svg = el('svg', {
+    viewBox: `0 0 ${W} ${H}`, class: 'chart-svg', preserveAspectRatio: 'none',
+    role: 'img', 'aria-label': spec.title || 'график',
+  }, plot);
+
+  // recessive baseline + one guide at the peak
+  el('line', { x1: padL, x2: W - padR, y1: y(min), y2: y(min), class: 'c-axis' }, svg);
+  el('line', { x1: padL, x2: W - padR, y1: y(max), y2: y(max), class: 'c-grid' }, svg);
+
+  const line = pts.map((p, i) => `${i ? 'L' : 'M'}${x(i).toFixed(1)},${y(p.value).toFixed(1)}`).join('');
+  const fill = `${line}L${x(pts.length - 1).toFixed(1)},${y(min)}L${x(0)},${y(min)}Z`;
+
+  const grad = el('linearGradient', { id: `g${spec.uid}`, x1: 0, y1: 0, x2: 0, y2: 1 }, el('defs', {}, svg));
+  el('stop', { offset: '0%', 'stop-color': 'var(--accent)', 'stop-opacity': '0.30' }, grad);
+  el('stop', { offset: '100%', 'stop-color': 'var(--accent)', 'stop-opacity': '0' }, grad);
+
+  const area = el('path', { d: fill, fill: `url(#g${spec.uid})`, class: 'c-area' }, svg);
+  const stroke = el('path', { d: line, class: 'c-line' }, svg);
+
+  // draw-in
+  if (!reduced()) {
+    const len = stroke.getTotalLength();
+    stroke.style.strokeDasharray = len;
+    stroke.style.strokeDashoffset = len;
+    area.style.opacity = 0;
+    requestAnimationFrame(() => {
+      stroke.style.transition = 'stroke-dashoffset 1.1s cubic-bezier(.4,0,.2,1)';
+      stroke.style.strokeDashoffset = 0;
+      area.style.transition = 'opacity .8s ease .35s';
+      area.style.opacity = 1;
+    });
+  }
+
+  const last = pts.length - 1;
+  el('circle', { cx: x(last), cy: y(pts[last].value), r: 4, class: 'c-dot-last' }, svg);
+
+  // hover layer
+  const cross = el('line', { class: 'c-cross', y1: padT, y2: y(min), opacity: 0 }, svg);
+  const dot = el('circle', { r: 4.5, class: 'c-dot', opacity: 0 }, svg);
+  const tip = document.createElement('div');
+  tip.className = 'chart-tip';
+  plot.appendChild(tip);
+
+  const nearest = clientX => {
+    const b = svg.getBoundingClientRect();
+    const rel = ((clientX - b.left) / b.width) * W;
+    let best = 0, bd = Infinity;
+    pts.forEach((_, i) => { const d = Math.abs(x(i) - rel); if (d < bd) { bd = d; best = i; } });
+    return best;
+  };
+
+  const show = e => {
+    const i = nearest(e.clientX);
+    const p = pts[i];
+    cross.setAttribute('x1', x(i)); cross.setAttribute('x2', x(i)); cross.setAttribute('opacity', 1);
+    dot.setAttribute('cx', x(i)); dot.setAttribute('cy', y(p.value)); dot.setAttribute('opacity', 1);
+    tip.innerHTML = `<b>${esc(p.display || fmt(p.value, spec.unit))}</b><span>${esc(p.label)}</span>`;
+    tip.style.opacity = 1;
+    const frac = x(i) / W;
+    tip.style.left = `${frac * 100}%`;
+    tip.style.transform = `translate(${frac > 0.75 ? '-100%' : frac < 0.25 ? '0' : '-50%'}, 0)`;
+  };
+  const hide = () => { cross.setAttribute('opacity', 0); dot.setAttribute('opacity', 0); tip.style.opacity = 0; };
+
+  plot.addEventListener('pointermove', show);
+  plot.addEventListener('pointerleave', hide);
+
+  // sparse axis labels: first, last, and the peak
+  const peak = pts.indexOf(pts.reduce((a, b) => (b.value > a.value ? b : a)));
+  const marks = [...new Set([0, peak, last])].sort((a, b) => a - b);
+  const axis = document.createElement('div');
+  axis.className = 'chart-axis';
+  axis.innerHTML = marks
+    .map(i => `<span style="left:${(x(i) / W * 100).toFixed(2)}%;transform:translateX(${i === 0 ? '0' : i === last ? '-100%' : '-50%'})">${esc(pts[i].label)}</span>`)
+    .join('');
+  plot.appendChild(axis);
+}
+
+/* ── magnitude ───────────────────────────────────────────────────
+   Horizontal bars, one hue. `emphasis` highlights the bar that carries
+   the point and greys the rest — the honest form when one value is the
+   story rather than the set.                                        */
+
+function barChart(host, spec) {
+  const plot = shell(host, spec);
+  const max = Math.max(...spec.series.map(s => Math.abs(s.value)));
+  const wrap = document.createElement('div');
+  wrap.className = 'c-bars';
+
+  spec.series.forEach((s, i) => {
+    const emph = spec.emphasis == null || spec.emphasis === i;
+    const row = document.createElement('div');
+    row.className = `c-bar ${emph ? '' : 'muted'}`;
+    row.innerHTML = `
+      <span class="c-bar-l">${esc(s.label)}</span>
+      <span class="c-bar-track"><i style="--w:${(Math.abs(s.value) / max * 100).toFixed(2)}%;${safeColor(s.color) ? `background:${safeColor(s.color)}` : ''}"></i></span>
+      <span class="c-bar-v">${esc(s.display || fmt(s.value, spec.unit))}</span>`;
+    wrap.appendChild(row);
+  });
+  plot.appendChild(wrap);
+  animateBars(wrap);
+}
+
+/* ── polarity ────────────────────────────────────────────────────
+   Two opposing quantities on a shared scale. Semantic colours: the
+   direction IS the meaning, so green removes supply and red adds it. */
+
+function compareChart(host, spec) {
+  const plot = shell(host, spec);
+  const max = Math.max(...spec.series.map(s => Math.abs(s.value)));
+  const wrap = document.createElement('div');
+  wrap.className = 'c-bars c-compare';
+  spec.series.forEach(s => {
+    const row = document.createElement('div');
+    row.className = `c-bar ${s.tone || ''}`;
+    row.innerHTML = `
+      <span class="c-bar-l">${esc(s.label)}</span>
+      <span class="c-bar-track"><i style="--w:${(Math.abs(s.value) / max * 100).toFixed(2)}%"></i></span>
+      <span class="c-bar-v">${esc(s.display || fmt(s.value, spec.unit))}</span>`;
+    wrap.appendChild(row);
+  });
+  plot.appendChild(wrap);
+  if (spec.ratio) {
+    const r = document.createElement('div');
+    r.className = 'c-ratio';
+    r.textContent = spec.ratio;
+    plot.appendChild(r);
+  }
+  animateBars(wrap);
+}
+
+/* ── scenario ladder ─────────────────────────────────────────────
+   Price targets on one axis with the live price marked, so the reader
+   sees distance-to-target rather than reading four numbers.          */
+
+function ladderChart(host, spec) {
+  const plot = shell(host, spec);
+  const vals = spec.series.map(s => s.value).concat(spec.current ? [spec.current] : []);
+  const lo = Math.min(...vals) * 0.9, hi = Math.max(...vals) * 1.05;
+  const at = v => ((v - lo) / (hi - lo)) * 100;
+
+  const wrap = document.createElement('div');
+  wrap.className = 'c-ladder';
+  wrap.innerHTML = `
+    <div class="c-ladder-track">
+      ${spec.current != null ? `<div class="c-now" style="left:${at(spec.current).toFixed(2)}%"><span>сейчас ${esc(spec.currentLabel || fmt(spec.current, spec.unit))}</span></div>` : ''}
+    </div>
+    ${spec.series.map((s, i) => {
+      const x = at(s.value);
+      // keep the outermost labels inside the box instead of centring them off it
+      const shift = x < 14 ? '0' : x > 86 ? '-100%' : '-50%';
+      return `
+      <div class="c-rung" style="--x:${x.toFixed(2)}%;--i:${i}">
+        <i class="c-rung-dot ${esc(s.tone || '')}"></i>
+        <span class="c-rung-v" style="transform:translateX(${shift})">${esc(s.display || fmt(s.value, spec.unit))}</span>
+        <span class="c-rung-l" style="transform:translateX(${shift})">${esc(s.label)}</span>
+      </div>`; }).join('')}`;
+  plot.appendChild(wrap);
+}
+
+/** Bars grow from the baseline once scrolled into view. */
+function animateBars(wrap) {
+  const bars = wrap.querySelectorAll('.c-bar-track i');
+  if (reduced()) { bars.forEach(b => b.style.width = 'var(--w)'); return; }
+  const io = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (!e.isIntersecting) return;
+      wrap.querySelectorAll('.c-bar-track i').forEach((b, i) => {
+        b.style.transitionDelay = `${i * 90}ms`;
+        b.style.width = 'var(--w)';
+      });
+      io.disconnect();
+    });
+  }, { threshold: 0.25 });
+  io.observe(wrap);
+}
+
+const RENDERERS = { area: areaChart, bars: barChart, compare: compareChart, ladder: ladderChart };
+
+/** Mount every chart placeholder left in the document. */
+function mountCharts(root, specs) {
+  root.querySelectorAll('[data-chart]').forEach(host => {
+    const spec = specs[Number(host.dataset.chart)];
+    if (!spec || !(spec.series || []).length) return;
+    spec.uid = host.dataset.chart;
+    (RENDERERS[spec.type] || barChart)(host, spec);
+  });
+}
+
+/* Motion. Everything here is a progressive enhancement: if the observer never
+ * fires or the user prefers reduced motion, content is already in its final
+ * state rather than stuck invisible. */
+
+
+/** Fade-and-rise elements as they enter the viewport, staggered per group. */
+function reveal(scope = document, sel = '.reveal') {
+  const items = [...scope.querySelectorAll(sel)];
+  if (!items.length) return;
+  if (reduced()) { items.forEach(n => n.classList.add('in')); return; }
+
+  const io = new IntersectionObserver((entries, obs) => {
+    // stagger by the order they appear on screen, not by DOM order
+    entries.filter(e => e.isIntersecting)
+      .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top)
+      .forEach((e, i) => {
+        setTimeout(() => e.target.classList.add('in'), i * 70);
+        obs.unobserve(e.target);
+      });
+  }, { rootMargin: '0px 0px -8% 0px', threshold: 0.08 });
+
+  items.forEach(n => io.observe(n));
+}
+
+/** Count a number up to its final value. `format` maps number -> string. */
+function countUp(node, to, format, ms = 900) {
+  if (reduced() || !isFinite(to)) { node.textContent = format(to); return; }
+  const from = 0;
+  const t0 = performance.now();
+  const ease = t => 1 - Math.pow(1 - t, 3);
+  const step = now => {
+    const t = Math.min(1, (now - t0) / ms);
+    node.textContent = format(from + (to - from) * ease(t));
+    if (t < 1) requestAnimationFrame(step);
+  };
+  requestAnimationFrame(step);
+}
+
+/** Run count-up on every [data-count] once it scrolls into view. */
+function countUpAll(scope = document) {
+  const nodes = [...scope.querySelectorAll('[data-count]')];
+  if (!nodes.length) return;
+  const io = new IntersectionObserver((entries, obs) => {
+    entries.forEach(e => {
+      if (!e.isIntersecting) return;
+      const n = e.target;
+      const to = Number(n.dataset.count);
+      const dec = Number(n.dataset.countDecimals || 0);
+      const pre = n.dataset.countPrefix || '';
+      const suf = n.dataset.countSuffix || '';
+      countUp(n, to, v => pre + v.toLocaleString('ru-RU', {
+        minimumFractionDigits: dec, maximumFractionDigits: dec,
+      }) + suf);
+      obs.unobserve(n);
+    });
+  }, { threshold: 0.4 });
+  nodes.forEach(n => io.observe(n));
+}
+
+/** Thin accent bar across the top showing how far down the page you are. */
+function readingProgress() {
+  const bar = document.createElement('div');
+  bar.className = 'progress';
+  bar.innerHTML = '<i></i>';
+  document.body.appendChild(bar);
+  const fill = bar.firstElementChild;
+  const update = () => {
+    const max = document.documentElement.scrollHeight - innerHeight;
+    fill.style.transform = `scaleX(${max > 0 ? Math.min(1, scrollY / max) : 0})`;
+  };
+  addEventListener('scroll', () => requestAnimationFrame(update), { passive: true });
+  addEventListener('resize', update);
+  update();
+}
+
+/** Floating "back to top", shown once the reader is well down the page. */
+function backToTop() {
+  const btn = document.createElement('button');
+  btn.className = 'to-top';
+  btn.type = 'button';
+  btn.setAttribute('aria-label', 'Наверх');
+  btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+    stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg>`;
+  btn.addEventListener('click', () =>
+    scrollTo({ top: 0, behavior: reduced() ? 'auto' : 'smooth' }));
+  document.body.appendChild(btn);
+  const update = () => btn.classList.toggle('on', scrollY > innerHeight * 0.8);
+  addEventListener('scroll', () => requestAnimationFrame(update), { passive: true });
+  update();
+}
+
+/** Days until a date, or null if it has passed. */
+function daysUntil(iso) {
+  if (!iso) return null;
+  const d = new Date(iso);
+  if (isNaN(d)) return null;
+  const ms = d.getTime() - Date.now();
+  return ms > 0 ? Math.ceil(ms / 86400000) : null;
+}
+
 
 function initListView() {
+
 
 const listEl = document.getElementById('list');
 const qEl = document.getElementById('q');
 const filtersEl = document.getElementById('filters');
+const sortEl = document.getElementById('sort');
 const statEl = document.getElementById('stat');
 const builtEl = document.getElementById('built');
+const summaryEl = document.getElementById('summary');
+const countEl = document.getElementById('count');
 
 let reports = [];
-let activeChain = null;
+const active = { chain: null, stance: null };
+let sortBy = 'date';
+
+const SORTS = {
+  date:   { label: 'по дате',           cmp: (a, b) => (b.date || '').localeCompare(a.date || '') },
+  mcap:   { label: 'по капитализации',  cmp: (a, b) => (b.mcap || 0) - (a.mcap || 0) },
+  change: { label: 'по движению 24ч',   cmp: (a, b) => (b.change24h ?? -1e9) - (a.change24h ?? -1e9) },
+  symbol: { label: 'по тикеру',         cmp: (a, b) => (a.symbol || '').localeCompare(b.symbol || '') },
+};
 
 init();
 
@@ -661,7 +1362,7 @@ async function init() {
   listEl.innerHTML = Array.from({ length: 3 }, () => '<div class="skeleton"></div>').join('');
   try {
     const idx = await loadJSON('data/index.json');
-    reports = (idx.reports || []).slice().sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+    reports = (idx.reports || []).slice();
     builtEl.textContent = idx.updated ? `обновлено ${date(idx.updated)}` : '';
   } catch (err) {
     listEl.innerHTML = `<div class="empty" style="grid-column:1/-1">
@@ -674,43 +1375,92 @@ async function init() {
   }
 
   statEl.textContent = `${reports.length} ${plural(reports.length, 'отчёт', 'отчёта', 'отчётов')}`;
+  renderSummary();
   renderFilters();
+  renderSort();
   render();
+
   qEl.addEventListener('input', render);
+  wireKeys();
 }
 
 function plural(n, one, few, many) {
-  const m10 = n % 10, m100 = n % 100;
-  if (m10 === 1 && m100 !== 11) return one;
-  if (m10 >= 2 && m10 <= 4 && (m100 < 10 || m100 >= 20)) return few;
+  const a = n % 10, b = n % 100;
+  if (a === 1 && b !== 11) return one;
+  if (a >= 2 && a <= 4 && (b < 10 || b >= 20)) return few;
   return many;
+}
+
+/** A small "state of the desk" strip so the page opens with something to read. */
+function renderSummary() {
+  if (!summaryEl || !reports.length) return;
+  const chains = new Set(reports.map(r => r.chain).filter(Boolean));
+  const mcap = reports.reduce((s, r) => s + (r.mcap || 0), 0);
+  const movers = reports.filter(r => r.change24h != null);
+  const best = movers.length ? movers.reduce((a, b) => (b.change24h > a.change24h ? b : a)) : null;
+  const stances = reports.reduce((m, r) => (m[r.stance] = (m[r.stance] || 0) + 1, m), {});
+
+  const tiles = [
+    ['Разборов', num(reports.length), `${chains.size} ${plural(chains.size, 'сеть', 'сети', 'сетей')}`],
+    ['Покрытая капитализация', usd(mcap), 'сумма по отчётам'],
+    best ? ['Лучший за 24ч', esc(best.symbol),
+      `<span class="${signClass(best.change24h)}">${pct(best.change24h, { sign: true })}</span>`] : null,
+    ['Позиции', Object.entries(stances).map(([k]) => stance(k).label).join(' · ') || '—', 'текущие вердикты'],
+  ].filter(Boolean);
+
+  summaryEl.innerHTML = tiles.map(([k, v, s], i) => `
+    <div class="tile reveal" style="--i:${i}">
+      <div class="k">${k}</div><div class="v">${v}</div><div class="s">${s || ''}</div>
+    </div>`).join('');
+  reveal(summaryEl, '.tile');
 }
 
 function renderFilters() {
   const chains = [...new Set(reports.map(r => r.chain).filter(Boolean))];
-  if (chains.length < 2) return;
-  filtersEl.innerHTML = chains
-    .map(c => `<button class="chip" data-chain="${esc(c)}" aria-pressed="false">${esc(c)}</button>`)
-    .join('');
+  const stances = [...new Set(reports.map(r => r.stance).filter(Boolean))];
+  const groups = [];
+  if (chains.length > 1) groups.push(chains.map(c => ({ kind: 'chain', v: c, label: c })));
+  if (stances.length > 1) groups.push(stances.map(s => ({ kind: 'stance', v: s, label: stance(s).label })));
+  if (!groups.length) return;
+
+  filtersEl.innerHTML = groups
+    .map(g => `<div class="chip-group">${g.map(o =>
+      `<button class="chip" data-kind="${esc(o.kind)}" data-v="${esc(o.v)}" aria-pressed="false">${esc(o.label)}</button>`
+    ).join('')}</div>`).join('');
+
   filtersEl.addEventListener('click', e => {
     const btn = e.target.closest('.chip');
     if (!btn) return;
-    const chain = btn.dataset.chain;
-    activeChain = activeChain === chain ? null : chain;
+    const { kind, v } = btn.dataset;
+    active[kind] = active[kind] === v ? null : v;
     filtersEl.querySelectorAll('.chip').forEach(b =>
-      b.setAttribute('aria-pressed', String(b.dataset.chain === activeChain)));
+      b.setAttribute('aria-pressed', String(active[b.dataset.kind] === b.dataset.v)));
     render();
   });
+}
+
+function renderSort() {
+  if (!sortEl) return;
+  sortEl.innerHTML = Object.entries(SORTS)
+    .map(([k, s]) => `<option value="${k}">${esc(s.label)}</option>`).join('');
+  sortEl.value = sortBy;
+  sortEl.addEventListener('change', () => { sortBy = sortEl.value; render(); });
 }
 
 function render() {
   const q = qEl.value.trim().toLowerCase();
   const shown = reports.filter(r => {
-    if (activeChain && r.chain !== activeChain) return false;
+    if (active.chain && r.chain !== active.chain) return false;
+    if (active.stance && r.stance !== active.stance) return false;
     if (!q) return true;
     return [r.symbol, r.name, r.chain, r.summary, r.slug]
       .filter(Boolean).join(' ').toLowerCase().includes(q);
-  });
+  }).sort(SORTS[sortBy].cmp);
+
+  if (countEl) {
+    const filtered = shown.length !== reports.length;
+    countEl.textContent = filtered ? `${shown.length} из ${reports.length}` : '';
+  }
 
   if (!reports.length) {
     listEl.innerHTML = `<div class="empty" style="grid-column:1/-1">
@@ -722,18 +1472,31 @@ function render() {
 
   if (!shown.length) {
     listEl.innerHTML = `<div class="empty" style="grid-column:1/-1">
-      <h3>Ничего не найдено</h3><p>Попробуй другой запрос.</p></div>`;
+      <h3>Ничего не найдено</h3><p>Попробуй другой запрос или сбрось фильтры.</p></div>`;
     return;
   }
 
   listEl.innerHTML = shown.map(card).join('');
+  reveal(listEl, '.card');
+  wireGlow();
 }
 
-function card(r) {
+/** The hover glow follows the pointer across each card. */
+function wireGlow() {
+  listEl.querySelectorAll('.card').forEach(c => {
+    c.addEventListener('pointermove', e => {
+      const b = c.getBoundingClientRect();
+      c.style.setProperty('--mx', `${((e.clientX - b.left) / b.width * 100).toFixed(1)}%`);
+      c.style.setProperty('--my', `${((e.clientY - b.top) / b.height * 100).toFixed(1)}%`);
+    });
+  });
+}
+
+function card(r, i) {
   const st = stance(r.stance);
   const ch = r.change24h;
   return `
-  <a class="card" href="report.html?id=${encodeURIComponent(r.slug)}">
+  <a class="card reveal" style="--i:${i}" href="report.html?id=${encodeURIComponent(r.slug)}">
     <div class="card-top">
       <div class="card-id">
         <div class="card-sym">${esc(r.symbol || r.slug)}</div>
@@ -749,18 +1512,40 @@ function card(r) {
       <span class="pill ${st.cls}">${esc(st.label)}</span>
       <span>${r.mcap ? esc(usd(r.mcap)) + ' · ' : ''}${esc(date(r.date))}</span>
     </div>
+    <span class="card-go" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+    </span>
   </a>`;
+}
+
+/** `/` jumps to search, Esc clears it. */
+function wireKeys() {
+  addEventListener('keydown', e => {
+    const typing = /^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement?.tagName);
+    if (e.key === '/' && !typing) { e.preventDefault(); qEl.focus(); qEl.select(); }
+    else if (e.key === 'Escape' && typing) { qEl.value = ''; qEl.blur(); render(); }
+  });
 }
 
 }
 
 function initReportView() {
 
+
+
 const headEl = document.getElementById('head');
 const bodyEl = document.getElementById('body');
 const navEl = document.getElementById('nav');
 const navInner = document.getElementById('nav-inner');
 const stampEl = document.getElementById('stamp');
+
+/** Chart specs collected while building HTML, mounted once it is in the DOM. */
+let charts = [];
+const chartBlock = spec => {
+  if (!spec || !(spec.series || []).length) return '';
+  charts.push(spec);
+  return `<div class="chart reveal" data-chart="${charts.length - 1}"></div>`;
+};
 
 init();
 
@@ -774,6 +1559,7 @@ function currentReportId() {
 }
 
 async function init() {
+  charts = [];
   const id = currentReportId();
   if (!id || !/^[a-z0-9_-]+$/i.test(id)) return fail('Не указан отчёт', 'Открой отчёт со <a class="link" href="index.html">главной страницы</a>.');
 
@@ -791,7 +1577,13 @@ async function init() {
   bodyEl.innerHTML = sections.map(s => s.html).join('');
   renderNav(sections);
   stampEl.textContent = r.updated ? `собрано ${ago(r.updated)}` : '';
+
+  mountCharts(bodyEl, charts);
   wireCopy();
+  wireAnchors();
+  reveal(document);
+  countUpAll(document);
+  if (!document.querySelector('.progress')) { readingProgress(); backToTop(); }
 }
 
 function fail(title, msg) {
@@ -799,6 +1591,14 @@ function fail(title, msg) {
 }
 
 /* ── Header ──────────────────────────────────────────────────── */
+
+function nextUnlock(r) {
+  const list = (r.fundamentals?.unlocks || [])
+    .map(u => ({ ...u, d: daysUntil(u.date) }))
+    .filter(u => u.d != null)
+    .sort((a, b) => a.d - b.d);
+  return list[0] || null;
+}
 
 function renderHead(r) {
   const m = r.market || {};
@@ -809,6 +1609,10 @@ function renderHead(r) {
    .map(([k, v]) => `<span class="${signClass(v)}">${k} ${pct(v, { sign: true })}</span>`)
    .join('');
 
+  const un = nextUnlock(r);
+  const countdown = un ? `<span class="chip-countdown" title="${esc(un.name || 'Разлок')} · ${esc(date(un.date))}">
+      <i></i>до разлока ${un.d} ${plural(un.d, 'день', 'дня', 'дней')}</span>` : '';
+
   headEl.innerHTML = `
     <div class="rep-title">
       <div>
@@ -817,6 +1621,7 @@ function renderHead(r) {
           <span class="pill ${st.cls}">${esc(st.label)}</span>
           ${r.chain ? `<span class="tag">${esc(r.chain)}</span>` : ''}
           ${r.sector ? `<span class="tag">${esc(r.sector)}</span>` : ''}
+          ${countdown}
           ${r.address ? `<button class="addr" data-copy="${esc(r.address)}" title="Скопировать адрес">
               ${esc(shortAddr(r.address))}
               <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 012-2h10"/></svg>
@@ -829,6 +1634,13 @@ function renderHead(r) {
         <div class="d">${deltas}</div>
       </div>
     </div>`;
+}
+
+function plural(n, one, few, many) {
+  const a = n % 10, b = n % 100;
+  if (a === 1 && b !== 11) return one;
+  if (a >= 2 && a <= 4 && (b < 10 || b >= 20)) return few;
+  return many;
 }
 
 /* ── Section assembly ────────────────────────────────────────── */
@@ -850,7 +1662,7 @@ function buildSections(r) {
 }
 
 function sect(id, label, inner) {
-  return `<section id="${id}"><h2>${esc(label)}</h2>${inner}</section>`;
+  return `<section id="${id}"><h2><a class="anchor" href="#${id}" aria-label="Ссылка на раздел">${esc(label)}</a></h2>${inner}</section>`;
 }
 
 function renderNav(sections) {
@@ -869,7 +1681,6 @@ function renderNav(sections) {
     for (const n of nodes) {
       if (n.getBoundingClientRect().top <= line) active = n; else break;
     }
-    // at the very bottom of the page the last section wins, even if short
     if (window.innerHeight + window.scrollY >= document.body.scrollHeight - 2) {
       active = nodes[nodes.length - 1];
     }
@@ -898,12 +1709,13 @@ function overview(r) {
   const v = r.verdict || {};
   if (!v.summary && !r.thesis) return '';
   const dots = v.conviction
-    ? `<div class="faint mono" style="font-size:12px;margin-top:10px">
-         Уверенность ${v.conviction}/5 ${'●'.repeat(v.conviction)}${'○'.repeat(Math.max(0, 5 - v.conviction))}
-       </div>` : '';
+    ? `<div class="conviction">Уверенность
+         <span class="dots">${Array.from({ length: 5 }, (_, i) =>
+           `<i class="${i < v.conviction ? 'on' : ''}" style="--i:${i}"></i>`).join('')}</span>
+         <b>${v.conviction}/5</b></div>` : '';
   return `
-    ${v.summary ? `<div class="panel accent"><div class="prose" style="font-size:16px">${prose(v.summary)}</div>${dots}</div>` : ''}
-    ${r.thesis ? `<div class="panel"><h3>Тезис</h3><div class="prose">${prose(r.thesis)}</div></div>` : ''}`;
+    ${v.summary ? `<div class="panel accent reveal"><div class="prose lead">${prose(v.summary)}</div>${dots}</div>` : ''}
+    ${r.thesis ? `<div class="panel reveal"><h3>Тезис</h3><div class="prose">${prose(r.thesis)}</div></div>` : ''}`;
 }
 
 function market(r) {
@@ -921,7 +1733,7 @@ function market(r) {
   ].filter(c => c[1] !== '—' || c[0] === 'Цена');
 
   const pools = (m.pools || []).length ? `
-    <div class="tbl-wrap" style="margin-top:12px">
+    <div class="tbl-wrap reveal" style="margin-top:12px">
       <table><thead><tr><th>Пул</th><th>DEX</th><th class="num">Ликвидность</th><th class="num">Объём 24ч</th></tr></thead>
       <tbody>${m.pools.map(p => `<tr>
         <td><strong>${esc(p.pair || '')}</strong></td>
@@ -931,8 +1743,10 @@ function market(r) {
       </tr>`).join('')}</tbody></table>
     </div>` : '';
 
-  const notes = m.notes ? `<div class="panel" style="margin-top:12px"><div class="prose">${prose(m.notes)}</div></div>` : '';
-  return metricGrid(cells) + pools + notes;
+  return metricGrid(cells)
+    + (m.charts || []).map(chartBlock).join('')
+    + pools
+    + (m.notes ? `<div class="panel reveal" style="margin-top:12px"><div class="prose">${prose(m.notes)}</div></div>` : '');
 }
 
 function onchain(r) {
@@ -948,8 +1762,10 @@ function onchain(r) {
   ].filter(c => c[1] !== '—');
   if (cells.length) parts.push(metricGrid(cells));
 
+  parts.push((o.charts || []).map(chartBlock).join(''));
+
   if ((o.topHolders || []).length) {
-    parts.push(`<div class="tbl-wrap" style="margin-top:12px">
+    parts.push(`<div class="tbl-wrap reveal" style="margin-top:12px">
       <table><thead><tr><th>Держатель</th><th>Адрес</th><th class="num">Доля</th><th class="num">Стоимость</th></tr></thead>
       <tbody>${o.topHolders.map(h => `<tr>
         <td><strong>${esc(h.label || 'Неизвестный')}</strong>${h.tag ? ` <span class="tag">${esc(h.tag)}</span>` : ''}</td>
@@ -963,12 +1779,12 @@ function onchain(r) {
     const movers = (o.smartMoney.movers || []).map(m => `
       <div class="kv"><span class="k">${esc(m.label || shortAddr(m.address))}</span>
       <span class="v mono ${signClass(m.netUsd)}">${usd(m.netUsd)}</span></div>`).join('');
-    parts.push(`<div class="panel" style="margin-top:12px"><h3>Умные деньги</h3>
+    parts.push(`<div class="panel reveal" style="margin-top:12px"><h3>Умные деньги</h3>
       ${o.smartMoney.notes ? `<div class="prose">${prose(o.smartMoney.notes)}</div>` : ''}${movers}</div>`);
   }
 
   if ((o.flows || []).length) {
-    parts.push(`<div class="tbl-wrap" style="margin-top:12px">
+    parts.push(`<div class="tbl-wrap reveal" style="margin-top:12px">
       <table><thead><tr><th>Период</th><th class="num">Приток на CEX</th><th class="num">Отток с CEX</th><th class="num">Нетто</th></tr></thead>
       <tbody>${o.flows.map(f => {
         const net = f.net != null ? f.net : (f.cexOut != null && f.cexIn != null ? f.cexOut - f.cexIn : null);
@@ -978,7 +1794,7 @@ function onchain(r) {
       }).join('')}</tbody></table></div>`);
   }
 
-  if (o.notes) parts.push(`<div class="panel" style="margin-top:12px"><div class="prose">${prose(o.notes)}</div></div>`);
+  if (o.notes) parts.push(`<div class="panel reveal" style="margin-top:12px"><div class="prose">${prose(o.notes)}</div></div>`);
   return parts.join('');
 }
 
@@ -987,8 +1803,8 @@ function fundamentals(r) {
   if (!f) return '';
   const parts = [];
 
-  if (f.what) parts.push(`<div class="panel"><h3>Что это</h3><div class="prose">${prose(f.what)}</div></div>`);
-  if (f.revenue) parts.push(`<div class="panel"><h3>Как зарабатывает</h3><div class="prose">${prose(f.revenue)}</div></div>`);
+  if (f.what) parts.push(`<div class="panel reveal"><h3>Что это</h3><div class="prose">${prose(f.what)}</div></div>`);
+  if (f.revenue) parts.push(`<div class="panel reveal"><h3>Как зарабатывает</h3><div class="prose">${prose(f.revenue)}</div></div>`);
 
   const cells = [
     ['TVL',             usd(f.tvl), f.tvlChange30d != null ? `${pct(f.tvlChange30d, { sign: true })} за 30д` : ''],
@@ -998,38 +1814,42 @@ function fundamentals(r) {
   ].filter(c => c[1] !== '—');
   if (cells.length) parts.push(`<div style="margin-top:12px">${metricGrid(cells)}</div>`);
 
+  parts.push((f.charts || []).map(chartBlock).join(''));
+
   const alloc = f.tokenomics?.allocations || [];
   if (alloc.length) {
     const total = alloc.reduce((s, a) => s + (a.pct || 0), 0) || 1;
-    parts.push(`<div class="panel" style="margin-top:12px"><h3>Распределение предложения</h3>
+    parts.push(`<div class="panel reveal" style="margin-top:12px"><h3>Распределение предложения</h3>
       <div class="stack">${alloc.map((a, i) =>
-        `<i style="width:${((a.pct || 0) / total * 100).toFixed(2)}%;background:${PALETTE[i % PALETTE.length]}" title="${esc(a.name)}"></i>`).join('')}</div>
+        `<i style="width:${((a.pct || 0) / total * 100).toFixed(2)}%;background:${CATEGORICAL[i % CATEGORICAL.length]};--i:${i}" title="${esc(a.name)}"></i>`).join('')}</div>
       <div class="legend">${alloc.map((a, i) =>
-        `<div><i style="background:${PALETTE[i % PALETTE.length]}"></i>${esc(a.name)}<b>${pct(a.pct, { asFraction: true })}</b></div>`).join('')}</div>
+        `<div><i style="background:${CATEGORICAL[i % CATEGORICAL.length]}"></i>${esc(a.name)}<b>${pct(a.pct, { asFraction: true })}</b></div>`).join('')}</div>
       ${f.tokenomics.emissions ? `<div class="prose" style="margin-top:16px">${prose(f.tokenomics.emissions)}</div>` : ''}
     </div>`);
   }
 
   if ((f.unlocks || []).length) {
-    parts.push(`<div class="panel" style="margin-top:12px"><h3>Разлоки</h3>
-      ${f.unlocks.map(u => `<div class="unlock">
-        <div class="date">${esc(date(u.date, { short: true }))}</div>
+    parts.push(`<div class="panel reveal" style="margin-top:12px"><h3>Разлоки</h3>
+      ${f.unlocks.map(u => {
+        const d = daysUntil(u.date);
+        return `<div class="unlock">
+        <div class="date">${esc(date(u.date, { short: true }))}${d != null ? `<span class="in">через ${d} ${plural(d, 'день', 'дня', 'дней')}</span>` : ''}</div>
         <div class="body">
           <div class="t">${esc(u.name || 'Разлок')}${u.pctSupply != null ? ` · ${pct(u.pctSupply, { asFraction: true, digits: 2 })} предложения` : ''}</div>
           ${u.note ? `<div class="n">${inline(u.note)}</div>` : ''}
         </div>
         <div class="amt">${usd(u.amountUsd)}</div>
-      </div>`).join('')}</div>`);
+      </div>`; }).join('')}</div>`);
   }
 
   if ((f.team || []).length) {
-    parts.push(`<div class="panel" style="margin-top:12px"><h3>Команда и инвесторы</h3>
+    parts.push(`<div class="panel reveal" style="margin-top:12px"><h3>Команда и инвесторы</h3>
       ${f.team.map(t => `<div class="kv"><span class="k">${esc(t.role || '')}</span>
         <span class="v">${esc(t.name || '')}${t.note ? ` <span class="faint">— ${esc(t.note)}</span>` : ''}</span></div>`).join('')}</div>`);
   }
 
   if ((f.highlights || []).length) {
-    parts.push(`<div class="panel" style="margin-top:12px"><h3>Ключевое</h3>
+    parts.push(`<div class="panel reveal" style="margin-top:12px"><h3>Ключевое</h3>
       <ul class="bullets">${f.highlights.map(h => `<li>${inline(h)}</li>`).join('')}</ul></div>`);
   }
   return parts.join('');
@@ -1044,21 +1864,23 @@ function derivatives(r) {
     ['Long/Short',       d.longShort != null ? d.longShort.toFixed(2) : '—'],
     ['Ликвидации 24ч',   usd(d.liq24h), d.liqLongShare != null ? `${pct(d.liqLongShare, { asFraction: true })} лонги` : ''],
   ].filter(c => c[1] !== '—');
-  const notes = d.notes ? `<div class="panel" style="margin-top:12px"><div class="prose">${prose(d.notes)}</div></div>` : '';
-  return (cells.length ? metricGrid(cells) : '') + notes;
+  return (cells.length ? metricGrid(cells) : '')
+    + (d.charts || []).map(chartBlock).join('')
+    + (d.notes ? `<div class="panel reveal" style="margin-top:12px"><div class="prose">${prose(d.notes)}</div></div>` : '');
 }
 
 function narrative(r) {
   const n = r.narrative;
   if (!n) return '';
   const parts = [];
-  if (n.sentiment) parts.push(`<div class="panel"><h3>Настроения</h3><div class="prose">${prose(n.sentiment)}</div></div>`);
+  if (n.sentiment) parts.push(`<div class="panel reveal"><h3>Настроения</h3><div class="prose">${prose(n.sentiment)}</div></div>`);
+  parts.push((n.charts || []).map(chartBlock).join(''));
   if ((n.catalysts || []).length) {
-    parts.push(`<div class="panel" style="margin-top:12px"><h3>Катализаторы</h3>
+    parts.push(`<div class="panel reveal" style="margin-top:12px"><h3>Катализаторы</h3>
       <ul class="bullets">${n.catalysts.map(c => `<li>${inline(typeof c === 'string' ? c : `${c.date ? date(c.date) + ' — ' : ''}${c.title || ''}`)}</li>`).join('')}</ul></div>`);
   }
   if ((n.news || []).length) {
-    parts.push(`<div class="panel news" style="margin-top:12px"><h3>Новости</h3>
+    parts.push(`<div class="panel news reveal" style="margin-top:12px"><h3>Новости</h3>
       ${n.news.map(x => {
         const href = safeUrl(x.url);
         const inner = `<span class="d">${esc(date(x.date, { short: true }))}</span>
@@ -1078,8 +1900,13 @@ function risks(r) {
   const order = { high: 0, med: 1, low: 2 };
   const sorted = list.slice().sort((a, b) => (order[a.severity] ?? 3) - (order[b.severity] ?? 3));
   const labels = { high: 'Высокий', med: 'Средний', low: 'Низкий' };
-  return `<div class="panel">${sorted.map(x => `
-    <div class="risk ${esc(x.severity || 'low')}">
+  const counts = ['high', 'med', 'low'].map(s => list.filter(x => x.severity === s).length);
+  return `<div class="risk-summary reveal">
+      ${['high', 'med', 'low'].map((s, i) => counts[i]
+        ? `<span class="rs ${s}"><i></i>${counts[i]} ${labels[s].toLowerCase()}</span>` : '').join('')}
+    </div>
+    <div class="panel">${sorted.map(x => `
+    <div class="risk ${esc(x.severity || 'low')} reveal">
       <span class="dot"></span>
       <div style="flex:1;min-width:0">
         <div class="t">${esc(x.title || '')}</div>
@@ -1095,12 +1922,25 @@ function position(r) {
   if (!p && !scen.length) return '';
   const parts = [];
 
+  // Scenario ladder when every scenario carries a numeric value; cards otherwise.
+  if (scen.length && scen.every(s => typeof s.value === 'number')) {
+    parts.push(chartBlock({
+      type: 'ladder', title: 'СЦЕНАРИИ ПРОТИВ ТЕКУЩЕЙ ЦЕНЫ', unit: 'usd',
+      current: r.market?.price, currentLabel: price(r.market?.price),
+      series: scen.map(s => ({
+        label: `${s.name}${s.prob != null ? ` · ${pct(s.prob, { asFraction: true, digits: 0 })}` : ''}`,
+        value: s.value, display: s.target || price(s.value),
+        tone: r.market?.price && s.value < r.market.price ? 'neg' : 'pos',
+      })),
+    }));
+  }
+
   if (scen.length) {
     parts.push(`<div class="scen">${scen.map(s => `
-      <div class="panel">
+      <div class="panel reveal">
         <div class="name">${esc(s.name || '')}</div>
         <div class="tgt">${esc(s.target || '—')}</div>
-        ${s.prob != null ? `<div class="prob"><span class="bar"><i style="width:${(s.prob * 100).toFixed(0)}%"></i></span>${pct(s.prob, { asFraction: true, digits: 0 })}</div>` : ''}
+        ${s.prob != null ? `<div class="prob"><span class="bar"><i style="--w:${(s.prob * 100).toFixed(0)}%"></i></span>${pct(s.prob, { asFraction: true, digits: 0 })}</div>` : ''}
         ${s.detail ? `<div class="why">${inline(s.detail)}</div>` : ''}
       </div>`).join('')}</div>`);
   }
@@ -1113,7 +1953,7 @@ function position(r) {
       ['Размер',        p.size],
       ['Горизонт',      p.horizon],
     ].filter(([, v]) => v);
-    parts.push(`<div class="panel accent" style="margin-top:12px">
+    parts.push(`<div class="panel accent reveal" style="margin-top:12px">
       <h3>План</h3>
       ${rows.map(([k, v]) => `<div class="kv"><span class="k">${esc(k)}</span><span class="v">${inline(v)}</span></div>`).join('')}
       ${p.notes ? `<div class="prose" style="margin-top:14px">${prose(p.notes)}</div>` : ''}
@@ -1125,7 +1965,7 @@ function position(r) {
 function sources(r) {
   const s = r.sources || [];
   if (!s.length) return '';
-  return `<div class="panel">${s.map(x => {
+  return `<div class="panel reveal">${s.map(x => {
     const href = safeUrl(x.url);
     const label = href
       ? `<a class="link" href="${esc(href)}" target="_blank" rel="noopener noreferrer">${esc(x.name)}</a>`
@@ -1138,7 +1978,7 @@ function sources(r) {
 /* ── Bits ────────────────────────────────────────────────────── */
 
 function metricGrid(cells) {
-  return `<div class="metrics">${cells.map(([k, v, s]) => `
+  return `<div class="metrics reveal">${cells.map(([k, v, s]) => `
     <div class="metric"><div class="k">${esc(k)}</div><div class="v">${v}</div>${s ? `<div class="s">${s}</div>` : ''}</div>
   `).join('')}</div>`;
 }
@@ -1149,9 +1989,24 @@ function wireCopy() {
       try {
         await navigator.clipboard.writeText(btn.dataset.copy);
         const old = btn.innerHTML;
+        btn.classList.add('done');
         btn.textContent = 'скопировано';
-        setTimeout(() => { btn.innerHTML = old; }, 1200);
+        setTimeout(() => { btn.innerHTML = old; btn.classList.remove('done'); }, 1200);
       } catch { /* clipboard unavailable */ }
+    });
+  });
+}
+
+/** Clicking a section heading copies a deep link to it. */
+function wireAnchors() {
+  document.querySelectorAll('.anchor').forEach(a => {
+    a.addEventListener('click', async e => {
+      e.preventDefault();
+      const url = `${location.origin}${location.pathname}${location.search}${a.getAttribute('href')}`;
+      try { await navigator.clipboard.writeText(url); } catch { /* ignore */ }
+      location.hash = a.getAttribute('href');
+      a.classList.add('copied');
+      setTimeout(() => a.classList.remove('copied'), 1200);
     });
   });
 }

@@ -23,15 +23,24 @@
     <p>Личная база исследований: рынок, on-chain, фундамент, деривативы и риски — по каждому токену в одном месте.</p>
   </div>
 
+  <div class="tiles" id="summary"></div>
+
   <div class="controls">
     <label class="search">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
         <circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/>
       </svg>
       <input id="q" type="search" placeholder="Поиск по тикеру, названию, сети…" autocomplete="off" spellcheck="false">
+      <kbd>/</kbd>
     </label>
     <div class="chips" id="filters"></div>
+    <label class="sort">
+      <span>Сортировка</span>
+      <select id="sort" aria-label="Сортировка"></select>
+    </label>
   </div>
+
+  <div class="result-count" id="count"></div>
 
   <main id="list" class="grid" aria-live="polite"></main>
 
