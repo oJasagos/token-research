@@ -46,7 +46,28 @@ const reportCount = Object.keys(bundle).length - 1;
 
 /* ── transform sources ────────────────────────────────────────── */
 
-const stripImports = s => s.replace(/^import\s[\s\S]*?from\s+'[^']+';\s*$/gm, '');
+/* Every module ends up in one scope, so a plain `import { pct }` needs nothing
+   at all — pct is already there. A renaming import is different: dropping
+   `import { price as fmtPrice }` leaves fmtPrice undefined, and the file only
+   breaks at runtime, in the browser, on the standalone build. Re-declare the
+   alias instead of deleting the line. */
+const KNOWN = new Set();
+
+function stripImports(src) {
+  return src.replace(/^import\s+([\s\S]*?)\s+from\s+'[^']+';\s*$/gm, (_, clause) => {
+    const named = clause.trim().match(/^\{([\s\S]*)\}$/);
+    if (!named) return '';                       // default or namespace import
+    const out = [];
+    for (const part of named[1].split(',')) {
+      const name = part.trim();
+      if (!name) continue;
+      const alias = name.match(/^(\S+)\s+as\s+(\S+)$/);
+      out.push(alias ? `const ${alias[2]} = ${alias[1]};` : '');
+      KNOWN.add(alias ? alias[1] : name);
+    }
+    return out.filter(Boolean).join('\n');
+  });
+}
 
 /* Shared modules, in dependency order: charts.js and anim.js both build on
    common.js. Stripping `export` drops them all into one scope, which is what
@@ -57,6 +78,18 @@ const shared = ['assets/js/common.js', 'assets/js/charts.js', 'assets/js/anim.js
 const listJs = stripImports(read('assets/js/index.js'));
 const reportJs = stripImports(read('assets/js/report.js'));
 const compareJs = stripImports(read('assets/js/compare.js'));
+
+/* An imported name that nothing exports is fine under real ES modules right up
+   until this build merges the files: then it is just a missing global. The
+   parse check below cannot see it, so compare the two lists here. */
+const exported = new Set(
+  [...shared.matchAll(/^(?:async\s+)?function\s+(\w+)|^const\s+(\w+)\s*=/gm)]
+    .map(m => m[1] || m[2]));
+const missing = [...KNOWN].filter(n => !exported.has(n));
+if (missing.length) {
+  console.error(`\nBuild aborted: imported but never defined in the bundle: ${missing.join(', ')}\n`);
+  process.exit(1);
+}
 
 /** Pull the body markup out of a page, minus its script tag. */
 function bodyOf(file) {
@@ -169,7 +202,7 @@ const page = `<!doctype html>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
 <meta name="referrer" content="no-referrer">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data:; connect-src https://api.binance.com https://api.gateio.ws; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data:; connect-src https://api.binance.com https://api.mexc.com https://api.gateio.ws; base-uri 'none'; form-action 'none'">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><circle cx='16' cy='16' r='9' fill='%237c83ff'/></svg>">
 </head>
 <body>

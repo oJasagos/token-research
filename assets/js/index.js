@@ -71,8 +71,8 @@ function wireLive() {
   }));
   if (!targets.length) return;
 
-  const venues = [...new Set(reports.filter(r => r.live).map(r => r.live.venue === 'gate' ? 'Gate' : 'Binance'))];
-  startLive(targets, ({ ok, at }) => ok ? badge.ok(venues.join(' · '), at) : badge.fail('обновить не удалось'));
+  startLive(targets, ({ ok, at, venues }) =>
+    ok ? badge.ok(venues.join(' · '), at) : badge.fail('обновить не удалось'));
 }
 
 function plural(n, one, few, many) {

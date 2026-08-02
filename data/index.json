@@ -13,10 +13,16 @@
       "mcap": 11600996945,
       "summary": "Сжигают 0.88 млн монет в месяц против разлока в 9.92 млн. Цена сошла к 52$, но моя база 40$ - жду 38-42$.",
       "geckoId": "hyperliquid",
-      "live": {
-        "venue": "gate",
-        "pair": "HYPE_USDT"
-      }
+      "live": [
+        {
+          "venue": "mexc",
+          "pair": "HYPEUSDT"
+        },
+        {
+          "venue": "gate",
+          "pair": "HYPE_USDT"
+        }
+      ]
     },
     {
       "slug": "lit",
@@ -30,10 +36,16 @@
       "mcap": 512103655,
       "summary": "До 27 декабря разлоков нет вообще, клифф их запускает, а не заканчивает. Цена 2.05$ - уже в 8% от зоны 1.8-1.9$.",
       "geckoId": "lighter",
-      "live": {
-        "venue": "gate",
-        "pair": "LIT_USDT"
-      }
+      "live": [
+        {
+          "venue": "mexc",
+          "pair": "LITUSDT"
+        },
+        {
+          "venue": "gate",
+          "pair": "LIT_USDT"
+        }
+      ]
     },
     {
       "slug": "aave",
@@ -47,10 +59,16 @@
       "mcap": 1388495735,
       "summary": "Выглядит дёшево, и это иллюзия: из 28.3M$ комиссий протоколу достаётся 3.79M$. Получается 30x к выручке, дороже HYPE.",
       "geckoId": "aave",
-      "live": {
-        "venue": "binance",
-        "pair": "AAVEUSDT"
-      }
+      "live": [
+        {
+          "venue": "binance",
+          "pair": "AAVEUSDT"
+        },
+        {
+          "venue": "mexc",
+          "pair": "AAVEUSDT"
+        }
+      ]
     },
     {
       "slug": "vvv",
@@ -64,10 +82,16 @@
       "mcap": 556105777,
       "summary": "Эмиссию срезали с 10 млн до 3 млн в год - это уже сделано. Но выручку никто не видел, есть только оценка на допущении.",
       "geckoId": "venice-token",
-      "live": {
-        "venue": "gate",
-        "pair": "VVV_USDT"
-      }
+      "live": [
+        {
+          "venue": "mexc",
+          "pair": "VVVUSDT"
+        },
+        {
+          "venue": "gate",
+          "pair": "VVV_USDT"
+        }
+      ]
     },
     {
       "slug": "sol",
@@ -81,10 +105,16 @@
       "mcap": 41679748321,
       "summary": "Эмиссия 1.73B$ в год против 273M$ комиссий сети - перекрывает в 6 раз. Реформу инфляции завалили трижды.",
       "geckoId": "solana",
-      "live": {
-        "venue": "binance",
-        "pair": "SOLUSDT"
-      }
+      "live": [
+        {
+          "venue": "binance",
+          "pair": "SOLUSDT"
+        },
+        {
+          "venue": "mexc",
+          "pair": "SOLUSDT"
+        }
+      ]
     },
     {
       "slug": "eth",
@@ -98,10 +128,16 @@
       "mcap": 222422096925,
       "summary": "Приложения на Ethereum заработали за год 5.47B$, сама сеть 251M$. Дефляции больше нет, но это база, а не сделка.",
       "geckoId": "ethereum",
-      "live": {
-        "venue": "binance",
-        "pair": "ETHUSDT"
-      }
+      "live": [
+        {
+          "venue": "binance",
+          "pair": "ETHUSDT"
+        },
+        {
+          "venue": "mexc",
+          "pair": "ETHUSDT"
+        }
+      ]
     },
     {
       "slug": "near",
@@ -115,10 +151,16 @@
       "mcap": 2173540066,
       "summary": "Это больше не L1: газ за год 1.65M$, а NEAR Intents дают 93% комиссий экосистемы. Оценивать надо роутер, а не цепочку.",
       "geckoId": "near",
-      "live": {
-        "venue": "binance",
-        "pair": "NEARUSDT"
-      }
+      "live": [
+        {
+          "venue": "binance",
+          "pair": "NEARUSDT"
+        },
+        {
+          "venue": "mexc",
+          "pair": "NEARUSDT"
+        }
+      ]
     }
   ]
 }

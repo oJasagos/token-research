@@ -30,6 +30,17 @@ const VENUES = {
     parse: rows => Object.fromEntries((Array.isArray(rows) ? rows : [rows]).map(r =>
       [r.symbol, { price: Number(r.lastPrice), change24h: Number(r.priceChangePercent) }])),
   },
+  mexc: {
+    label: 'MEXC',
+    // Binance-shaped API with one difference that matters: priceChangePercent
+    // is a fraction here (-0.0102), not a percent (-1.02), so it needs x100.
+    url: pairs => `https://api.mexc.com/api/v3/ticker/24hr?symbol=${encodeURIComponent(pairs[0])}`,
+    perPair: true,
+    parse: row => {
+      const r = Array.isArray(row) ? row[0] : row;
+      return r ? { [r.symbol]: { price: Number(r.lastPrice), change24h: Number(r.priceChangePercent) * 100 } } : {};
+    },
+  },
   gate: {
     label: 'Gate',
     url: pairs => `https://api.gateio.ws/api/v4/spot/tickers?currency_pair=${encodeURIComponent(pairs[0])}`,
@@ -55,8 +66,10 @@ async function getJSON(url) {
 async function fetchQuotes(targets) {
   const byVenue = {};
   for (const t of targets) {
-    if (!t.live?.venue || !t.live?.pair || !VENUES[t.live.venue]) continue;
-    (byVenue[t.live.venue] ||= new Set()).add(t.live.pair);
+    for (const src of sourcesOf(t)) {
+      if (!VENUES[src.venue]) continue;
+      (byVenue[src.venue] ||= new Set()).add(src.pair);
+    }
   }
 
   const out = {};
@@ -74,6 +87,14 @@ async function fetchQuotes(targets) {
   return out;
 }
 
+/** A target may list several venues; they are tried in order. Accepts both the
+ *  single-object form and an array, so older report files keep working. */
+function sourcesOf(t) {
+  const v = t.live;
+  if (!v) return [];
+  return (Array.isArray(v) ? v : [v]).filter(s => s && s.venue && s.pair);
+}
+
 /** Reject anything that cannot plausibly be this asset. */
 function accept(quote, reference) {
   if (!quote || !isFinite(quote.price) || quote.price <= 0) return false;
@@ -86,8 +107,7 @@ function accept(quote, reference) {
  * Calls apply() only with a quote that passed the guards.
  */
 export function startLive(targets, onRound) {
-  const list = targets.filter(t => t.live?.venue && t.live?.pair);
-  if (!list.length || !navigator.onLine === true) { /* still try: onLine can lie */ }
+  const list = targets.filter(t => sourcesOf(t).length);
   if (!list.length) return () => {};
 
   let stopped = false;
@@ -96,13 +116,19 @@ export function startLive(targets, onRound) {
     if (stopped || document.hidden) return;
     const quotes = await fetchQuotes(list);
     let ok = 0;
+    const used = new Set();
     for (const t of list) {
-      const q = quotes[`${t.live.venue}:${t.live.pair}`];
-      if (!accept(q, t.reference)) continue;
-      t.apply({ ...q, venue: VENUES[t.live.venue].label });
-      ok++;
+      // first venue that answers with a plausible number wins
+      for (const src of sourcesOf(t)) {
+        const q = quotes[`${src.venue}:${src.pair}`];
+        if (!accept(q, t.reference)) continue;
+        t.apply({ ...q, venue: VENUES[src.venue].label });
+        used.add(VENUES[src.venue].label);
+        ok++;
+        break;
+      }
     }
-    if (onRound) onRound({ ok, total: list.length, at: Date.now() });
+    if (onRound) onRound({ ok, total: list.length, at: Date.now(), venues: [...used] });
   };
 
   round();
