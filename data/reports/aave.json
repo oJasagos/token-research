@@ -33,6 +33,10 @@
         "pair": "AAVEUSDT"
       },
       {
+        "venue": "bybit",
+        "pair": "AAVEUSDT"
+      },
+      {
         "venue": "mexc",
         "pair": "AAVEUSDT"
       }

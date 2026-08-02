@@ -15,6 +15,10 @@
       "geckoId": "hyperliquid",
       "live": [
         {
+          "venue": "bybit",
+          "pair": "HYPEUSDT"
+        },
+        {
           "venue": "mexc",
           "pair": "HYPEUSDT"
         },
@@ -37,6 +41,10 @@
       "summary": "До 27 декабря разлоков нет вообще, клифф их запускает, а не заканчивает. Цена 2.05$ - уже в 8% от зоны 1.8-1.9$.",
       "geckoId": "lighter",
       "live": [
+        {
+          "venue": "bybit",
+          "pair": "LITUSDT"
+        },
         {
           "venue": "mexc",
           "pair": "LITUSDT"
@@ -65,6 +73,10 @@
           "pair": "AAVEUSDT"
         },
         {
+          "venue": "bybit",
+          "pair": "AAVEUSDT"
+        },
+        {
           "venue": "mexc",
           "pair": "AAVEUSDT"
         }
@@ -83,6 +95,10 @@
       "summary": "Эмиссию срезали с 10 млн до 3 млн в год - это уже сделано. Но выручку никто не видел, есть только оценка на допущении.",
       "geckoId": "venice-token",
       "live": [
+        {
+          "venue": "bybit",
+          "pair": "VVVUSDT"
+        },
         {
           "venue": "mexc",
           "pair": "VVVUSDT"
@@ -111,6 +127,10 @@
           "pair": "SOLUSDT"
         },
         {
+          "venue": "bybit",
+          "pair": "SOLUSDT"
+        },
+        {
           "venue": "mexc",
           "pair": "SOLUSDT"
         }
@@ -134,6 +154,10 @@
           "pair": "ETHUSDT"
         },
         {
+          "venue": "bybit",
+          "pair": "ETHUSDT"
+        },
+        {
           "venue": "mexc",
           "pair": "ETHUSDT"
         }
@@ -154,6 +178,10 @@
       "live": [
         {
           "venue": "binance",
+          "pair": "NEARUSDT"
+        },
+        {
+          "venue": "bybit",
           "pair": "NEARUSDT"
         },
         {

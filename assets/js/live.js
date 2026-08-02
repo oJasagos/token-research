@@ -1,10 +1,14 @@
 /* Live prices, pulled straight from the exchanges in the reader's browser.
  *
- * Venues are configured per token (market.live = {venue, pair}) rather than
- * guessed from the ticker, because tickers collide: LIT on Binance is
- * Litentry, a different asset whose market last traded in July at 0.74$,
- * while our LIT is Lighter at ~2$. Wiring by symbol would have shown the
- * wrong number with full confidence.
+ * Venues are configured per token (market.live = [{venue, pair}, ...], tried in
+ * order) rather than guessed from the ticker, because tickers collide: LIT on
+ * Binance is Litentry, a different asset whose market last traded in July at
+ * 0.74$, while our LIT is Lighter at ~2$. Wiring by symbol would have shown
+ * the wrong number with full confidence.
+ *
+ * Several venues per token, because an exchange can be reachable from one
+ * browser and not another - CORS, a regional block, a rate limit. Gate answers
+ * fine from a server and never from the page.
  *
  * Two guards keep a bad mapping from ever reaching the page:
  *   - a live price more than SANITY away from the price recorded in the
@@ -40,6 +44,14 @@ const VENUES = {
       const r = Array.isArray(row) ? row[0] : row;
       return r ? { [r.symbol]: { price: Number(r.lastPrice), change24h: Number(r.priceChangePercent) * 100 } } : {};
     },
+  },
+  bybit: {
+    label: 'Bybit',
+    url: pairs => `https://api.bybit.com/v5/market/tickers?category=spot&symbol=${encodeURIComponent(pairs[0])}`,
+    perPair: true,
+    // price24hPcnt is a fraction too, same as MEXC.
+    parse: res => Object.fromEntries((res?.result?.list || []).map(r =>
+      [r.symbol, { price: Number(r.lastPrice), change24h: Number(r.price24hPcnt) * 100 }])),
   },
   gate: {
     label: 'Gate',
@@ -117,18 +129,24 @@ export function startLive(targets, onRound) {
     const quotes = await fetchQuotes(list);
     let ok = 0;
     const used = new Set();
+    const detail = [];
     for (const t of list) {
       // first venue that answers with a plausible number wins
+      let served = null;
       for (const src of sourcesOf(t)) {
         const q = quotes[`${src.venue}:${src.pair}`];
         if (!accept(q, t.reference)) continue;
         t.apply({ ...q, venue: VENUES[src.venue].label });
-        used.add(VENUES[src.venue].label);
+        served = VENUES[src.venue].label;
+        used.add(served);
         ok++;
         break;
       }
+      // Which token fell back to which venue - the only way to tell a blocked
+      // exchange from a plain frozen price without opening devtools.
+      if (t.label) detail.push(`${t.label}: ${served || 'нет данных'}`);
     }
-    if (onRound) onRound({ ok, total: list.length, at: Date.now(), venues: [...used] });
+    if (onRound) onRound({ ok, total: list.length, at: Date.now(), venues: [...used], detail });
   };
 
   round();
@@ -172,9 +190,10 @@ export function liveBadge() {
   el.innerHTML = '<i></i><b></b><em></em>';
   return {
     node: el,
-    ok(venues, at) {
+    ok(venues, at, detail) {
       el.classList.remove('stale');
       el.querySelector('b').textContent = venues;
+      if (detail && detail.length) el.title = detail.join('\n');
       const tick = () => {
         const s = Math.round((Date.now() - at) / 1000);
         el.querySelector('em').textContent = s < 60 ? `${s} с назад` : `${Math.round(s / 60)} мин назад`;

@@ -85,7 +85,7 @@ function wireLive(reports) {
   noteEl?.parentNode.insertBefore(badge.node, noteEl.nextSibling);
   const last = {};
   const targets = reports.filter(r => r.market?.live).map(r => ({
-    live: r.market.live, reference: r.market.price,
+    live: r.market.live, reference: r.market.price, label: r.symbol,
     apply(q) {
       const node = tableEl.querySelector(`.cmp-live[data-slug="${CSS.escape(r.slug)}"]`);
       applyPrice(node, q.price, last[r.slug]);
@@ -93,8 +93,8 @@ function wireLive(reports) {
     },
   }));
   if (!targets.length) return;
-  startLive(targets, ({ ok, at, venues }) =>
-    ok ? badge.ok(venues.join(' · '), at) : badge.fail('обновить не удалось'));
+  startLive(targets, ({ ok, at, venues, detail }) =>
+    ok ? badge.ok(venues.join(' · '), at, detail) : badge.fail('обновить не удалось'));
 }
 
 function render(reports) {

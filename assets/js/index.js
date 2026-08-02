@@ -59,7 +59,7 @@ function wireLive() {
   const last = {};
 
   const targets = reports.filter(r => r.live).map(r => ({
-    live: r.live, reference: r.price,
+    live: r.live, reference: r.price, label: r.symbol,
     apply(q) {
       const card = listEl.querySelector(`.card[data-slug="${CSS.escape(r.slug)}"]`);
       r.livePrice = q.price;
@@ -71,8 +71,8 @@ function wireLive() {
   }));
   if (!targets.length) return;
 
-  startLive(targets, ({ ok, at, venues }) =>
-    ok ? badge.ok(venues.join(' · '), at) : badge.fail('обновить не удалось'));
+  startLive(targets, ({ ok, at, venues, detail }) =>
+    ok ? badge.ok(venues.join(' · '), at, detail) : badge.fail('обновить не удалось'));
 }
 
 function plural(n, one, few, many) {
