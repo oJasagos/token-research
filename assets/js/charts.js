@@ -89,9 +89,27 @@ function areaChart(host, spec) {
   const area = el('path', { d: fill, fill: `url(#g${spec.uid})`, class: 'c-area' }, svg);
   const stroke = el('path', { d: line, class: 'c-line' }, svg);
 
+  /* Screen-space length of the polyline.
+     getTotalLength() would be the obvious call, and it is wrong here: the line
+     is drawn with vector-effect: non-scaling-stroke, so the dash pattern is
+     measured in screen pixels, while getTotalLength() answers in viewBox units
+     (720 wide). On a wide screen the path is several times longer than that,
+     the dash runs out early and the tail of the line is simply never drawn.
+     The path is straight segments between points we already have, so measure
+     it directly with the two axis scales applied. */
+  const screenLen = () => {
+    const b = svg.getBoundingClientRect();
+    const sx = (b.width || W) / W, sy = (b.height || H) / H;
+    let len = 0;
+    for (let i = 1; i < pts.length; i++) {
+      len += Math.hypot((x(i) - x(i - 1)) * sx, (y(pts[i].value) - y(pts[i - 1].value)) * sy);
+    }
+    return len;
+  };
+
   // draw-in
   if (!reduced()) {
-    const len = stroke.getTotalLength();
+    const len = screenLen();
     stroke.style.strokeDasharray = len;
     stroke.style.strokeDashoffset = len;
     area.style.opacity = 0;
@@ -101,6 +119,16 @@ function areaChart(host, spec) {
       area.style.transition = 'opacity .8s ease .35s';
       area.style.opacity = 1;
     });
+    // A leftover dasharray breaks the line again the moment the window gets
+    // wider than it was when the animation ran. Drop it once it has played.
+    const clear = e => {
+      if (e && e.propertyName !== 'stroke-dashoffset') return;
+      stroke.style.strokeDasharray = '';
+      stroke.style.strokeDashoffset = '';
+      stroke.style.transition = '';
+    };
+    stroke.addEventListener('transitionend', clear, { once: true });
+    setTimeout(clear, 1600);          // transitionend never fires on a hidden tab
   }
 
   const last = pts.length - 1;
